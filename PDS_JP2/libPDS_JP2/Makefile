@@ -21,6 +21,20 @@ NO_LOGS_DIR				=	true
 
 LIBRARY					=	$(SUBSYSTEM)
 
+#	Host system architecture identification.
+empty :=
+space := $(empty) $(empty)
+MACHINE					:=	$(subst $(space),_,$(shell uname -m))
+PLATFORM				:=	$(subst $(space),_,$(shell uname -p))
+OS						:=  $(subst $(space),_,$(shell uname -s))
+KERNEL_RELEASE			:=	$(subst .,$(space),$(shell uname -r))
+ifeq ($(PLATFORM),unknown)
+PLATFORM = $(MACHINE)
+endif
+ifneq (,$(findstring CYGWIN, $(OS)))
+OS := WIN
+endif
+
 
 #	Set the following macro to a positive value if incrementatal
 #	codestream flushing is to be enabled by default in the JP2_Encoder
@@ -74,7 +88,7 @@ endif
 #	If support for Geo_TIFF and GML JP2 boxes is to be included,
 #		uncomment the next line.
 #!!	Subsystem Makefile overrides this value.
-GDAL					?=	GDAL
+#GDAL					?=	GDAL
 GDAL_SUPPORT			=	-DINCLUDE_GDAL
 GDAL_INCLUDE			=	-I$(GDAL_ROOT)/include
 GDAL_LIBRARY			=	-L$(GDAL_ROOT)/lib -lgdal$(64)
@@ -83,7 +97,7 @@ LIBRARY_SOURCES			+=	PDS_Projection_Data.cc
 endif
 
 #	PVL library.
-PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include
+PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include -I$(IDAEIM_ROOT)/include/PVL -I$(IDAEIM_ROOT)/include/Strings -I$(IDAEIM_ROOT)/include/Utility
 PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
 								-lPVL$(64) \
 								-lString$(64) \
@@ -108,12 +122,17 @@ LIBRARIES				+= 	$(PVL_LIBRARY) \
 							$(PIRL_LIBRARY) 
 
 #	Include files:
-
+ifeq ($(OS),WIN)
+INCLUDES 				=	$(PVL_INCLUDE) \
+							$(KAKADU_INCLUDE) \
+							$(PIRL_INCLUDE) \
+							$($(GDAL)_INCLUDE)
+else
 INCLUDE 				=	$(PVL_INCLUDE) \
 							$(KAKADU_INCLUDE) \
 							$(PIRL_INCLUDE) \
 							$($(GDAL)_INCLUDE)
-
+endif
 
 #	Preprocessor flags:
 

@@ -17,6 +17,20 @@ NO_CONFIG_DIR		=	true
 NO_DATA_DIR			=	true
 NO_LOGS_DIR			=	true
 
+#	Host system architecture identification.
+empty :=
+space := $(empty) $(empty)
+MACHINE					:=	$(subst $(space),_,$(shell uname -m))
+PLATFORM				:=	$(subst $(space),_,$(shell uname -p))
+OS						:=  $(subst $(space),_,$(shell uname -s))
+KERNEL_RELEASE			:=	$(subst .,$(space),$(shell uname -r))
+ifeq ($(PLATFORM),unknown)
+PLATFORM = $(MACHINE)
+endif
+ifneq (,$(findstring CYGWIN, $(OS)))
+OS := WIN
+endif
+
 #	Application programs:
 
 APPLICATIONS			=	PDS_to_JP2 \
@@ -40,7 +54,7 @@ APPLICATIONS			=	PDS_to_JP2 \
 #
 #!!	Subsystem Makefile overrides this value.
 
-PRODUCER_SIGNATURE		?= 
+#PRODUCER_SIGNATURE		?= 
 
 #	If the OSSP UUID software library is not available the following
 #	macro may be set to the UUID to be included in the JP2 produced by
@@ -59,9 +73,9 @@ PRODUCER_SIGNATURE		?=
 #!!	Subsystem Makefile overrides this value.
 #
 #	This definition is the UUID for "".
-#PRODUCER_UUID			?= \
-#		0x2b, 0x0d, 0x7e, 0x97, 0xaa, 0x2e, 0x31, 0x7d, \
-#		0x91, 0x33, 0xe5, 0x31, 0x61, 0xa2, 0xf7, 0xd0
+PRODUCER_UUID			?= \
+		0x2b, 0x0d, 0x7e, 0x97, 0xaa, 0x2e, 0x31, 0x7d, \
+		0x91, 0x33, 0xe5, 0x31, 0x61, 0xa2, 0xf7, 0xd0
 
 
 #	Libraries:
@@ -72,7 +86,7 @@ PRODUCER_SIGNATURE		?=
 #	If OSSP support for UUID generation is to be included,
 #		uncomment the next line.
 #!!	Subsystem Makefile overrides this value.
-OSSP_UUID				?=	OSSP_UUID
+#OSSP_UUID				?=	OSSP_UUID
 OSSP_UUID_SUPPORT		=	-DINCLUDE_OSSP_UUID
 OSSP_UUID_INCLUDE		=	-I$(OSSP_UUID_ROOT)/include
 OSSP_UUID_LIBRARY		=	-L$(OSSP_UUID_ROOT)/lib -luuid++$(64) \
@@ -83,14 +97,14 @@ OSSP_UUID_DIST			=	$(OSSP_UUID_ROOT)/lib/libuuid++$(64)
 #	If support for Geo_TIFF and GML JP2 boxes is to be included,
 #		uncomment the next line.
 #!!	Subsystem Makefile overrides this value.
-GDAL					?=	GDAL
+#GDAL					?=	GDAL
 GDAL_SUPPORT			=	-DINCLUDE_GDAL
 GDAL_INCLUDE			=	-I$(GDAL_ROOT)/include
 GDAL_LIBRARY			=	-L$(GDAL_ROOT)/lib -lgdal$(64)
 GDAL_DIST				=	$(GDAL_ROOT)/lib/libgdal$(64)
 
 #	PVL library.
-PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include
+PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include -I$(IDAEIM_ROOT)/include/PVL -I$(IDAEIM_ROOT)/include/Strings -I$(IDAEIM_ROOT)/include/Utility
 PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
 								-lPVL$(64) \
 								-lString$(64) \
@@ -128,14 +142,21 @@ LIBRARIES				+= 	-L$(SUBSYSTEM_LIB_DIR) \
 							$($(OSSP_UUID)_LIBRARY)
 
 #	Include files:
-
+ifeq ($(OS),WIN)
+INCLUDES				=	-I$(SUBSYSTEM_LIB_DIR) \
+							$(PVL_INCLUDE) \
+							$(KAKADU_INCLUDE) \
+							$(PIRL_INCLUDE) \
+							$($(OSSP_UUID)_INCLUDE) \
+							$($(GDAL)_INCLUDE)
+else
 INCLUDE					=	-I$(SUBSYSTEM_LIB_DIR) \
 							$(PVL_INCLUDE) \
 							$(KAKADU_INCLUDE) \
 							$(PIRL_INCLUDE) \
 							$($(OSSP_UUID)_INCLUDE) \
 							$($(GDAL)_INCLUDE)
-
+endif
 
 #	Preprocessor flags:
 
@@ -311,18 +332,23 @@ dist_wipe:
 
 ifneq ($(strip $(PRODUCER_SIGNATURE)),)
 PDS_to_JP2.o$(64):	CPPFLAGS	+=	-DPRODUCER_SIGNATURE='"$(PRODUCER_SIGNATURE)"'
+PDS_to_JP2.obj:		CPPFLAGS	+=	-DPRODUCER_SIGNATURE='"$(PRODUCER_SIGNATURE)"'
 else
 ifneq ($(strip $(PRODUCER_UUID)),)
 PDS_to_JP2.o$(64):	CPPFLAGS	+=	-DPRODUCER_UUID='$(PRODUCER_UUID)'
+PDS_to_JP2.obj:		CPPFLAGS	+=	-DPRODUCER_UUID='$(PRODUCER_UUID)'
 endif
 endif
 PDS_to_JP2.o$(64):	CPPFLAGS	+=	$($(GDAL)_SUPPORT) \
 									$($(OSSP_UUID)_SUPPORT)
-
+PDS_to_JP2.obj:		CPPFLAGS	+=	$($(GDAL)_SUPPORT) \
+									$($(OSSP_UUID)_SUPPORT)
+									
 JP2_to_PDS:			override OSSP_UUID	=
 JP2_to_PDS:			override GDAL		=
 JP2_to_PDS.o$(64):	override OSSP_UUID	=
-JP2_to_PDS.o$(64):	override GDAL		=
+JP2_to_PDS.obj:		override OSSP_UUID	=
+JP2_to_PDS.obj:		override GDAL		=
 
 $(PROGRAMS):	$(SUBSYSTEM_LIB)
 $(SUBSYSTEM_LIB):

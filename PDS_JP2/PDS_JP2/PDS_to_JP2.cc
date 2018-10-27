@@ -76,7 +76,7 @@ recommended_resolution_levels
 	);
 
 unsigned char*
-UUID
+UUID_of
 	(
 	const char*	signature
 	);
@@ -136,7 +136,7 @@ const char
 	*DEFAULT_PRODUCER_SIGNATURE	= PRODUCER_SIGNATURE;
 //!	Default data provider identification UUID.
 unsigned char
-	*DEFAULT_PRODUCER_UUID		= UUID (DEFAULT_PRODUCER_SIGNATURE);
+	*DEFAULT_PRODUCER_UUID		= UUID_of (DEFAULT_PRODUCER_SIGNATURE);
 #else	//	! defined (PRODUCER_SIGNATURE)
 const char
 	*DEFAULT_PRODUCER_SIGNATURE	= NULL;
@@ -1147,7 +1147,7 @@ for (int
 
 							producer_signature = number_string;
 							delete [] producer_ID;
-							producer_ID = UUID (producer_signature);
+							producer_ID = UUID_of (producer_signature);
 							break;
 							}
 						#endif
@@ -1421,8 +1421,12 @@ for (int
 					 strchr (arguments[count], 'v')) &&
 					(strchr (arguments[count], 'C') ||
 					 strchr (arguments[count], 'c')))
+					{
+#ifdef INCLUDE_GDAL
 					//	No Version Change.
 					no_version_change = true;
+#endif
+					}
 				else
 					//	No output.
 					no_output = true;
@@ -2133,7 +2137,7 @@ return levels;
 		returned.
 */
 unsigned char*
-UUID
+UUID_of
 	(
 	const char*	signature
 	)

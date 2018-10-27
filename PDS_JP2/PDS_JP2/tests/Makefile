@@ -20,7 +20,7 @@ APPLICATIONS			=	PDS_Test_Image \
 #	Libraries:
 
 #	PVL library.
-PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include
+PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include -I$(IDAEIM_ROOT)/include/PVL -I$(IDAEIM_ROOT)/include/Strings -I$(IDAEIM_ROOT)/include/Utility
 PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
 								-lPVL$(64) \
 								-lString$(64) \
