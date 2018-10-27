@@ -1,0 +1,24 @@
+#	HiRISE Makefile.host
+#
+#	gmake v3.81 syntax
+#
+#	CVS ID: Makefile.host,v 1.2 2012/08/23 01:17:02 castalia Exp
+
+#	Host machine architecture identification.
+
+ifndef MACHINE
+empty :=
+space := $(empty) $(empty)
+MACHINE					:=	$(subst $(space),_,$(shell uname -m))
+PLATFORM				:=	$(subst $(space),_,$(shell uname -p))
+OS						:=	$(subst $(space),_,$(shell uname -s))
+KERNEL_RELEASE			:=	$(subst .,$(space),$(shell uname -r))
+ifeq ($(PLATFORM),unknown)
+PLATFORM = $(MACHINE)
+endif
+ifneq (,$(findstring CYGWIN, $(OS)))
+#	MS/Windows.
+OS := WIN
+endif
+
+endif

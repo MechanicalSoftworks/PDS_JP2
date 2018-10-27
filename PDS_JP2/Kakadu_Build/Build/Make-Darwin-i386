@@ -1,0 +1,99 @@
+#	Kakadu Software Build Configuration
+#
+#	Host options for Apple Mac (Darwin) systems.
+#
+#	PIRL CVS ID: Make-Darwin-i386,v 1.9 2012/08/23 23:38:41 castalia Exp
+
+#	Installation base directory.
+INSTALL_DIR		?=	
+#	For finer control of the various installation directories
+#	set here, on the command line or as environment variables:
+#BIN_DIR		?=	$(INSTALL_DIR)/bin
+#LIB_DIR		?=	$(INSTALL_DIR)/lib
+#INCLUDE_DIR	?=	$(INSTALL_DIR)/include
+#DOCS_DIR		?=	$(INSTALL_DIR)/docs
+
+#	Uncomment either or both library build selections.
+STATIC			:=	STATIC
+SHARED			:=	SHARED
+
+#	Universal binaries.
+#		Comment out if only native binaries are to be built.
+FAT_MAC			?=	-arch i386 \
+					-arch ppc
+
+
+#	C++ compiler.
+#		Comment out to use the system's default compiler.
+CC				:=	g++
+
+#	Additional include file paths.
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include
+
+#	Whether to link programs using SHARED or STATIC libraries.
+#		It's generally best to use the system default unless static is required.
+#LIBRARY_SELECTION			?=	STATIC
+
+SHARED_LIBRARY_EXTENSION	?=	dylib
+SHARED_LIBRARY_OPTION		:=	-dynamiclib \
+								-current_version $(VERSION) \
+								-single_module
+
+HOST_CXXFLAGS 	+=	-O3 -DNDEBUG -Wall -Wno-uninitialized
+
+#	Large file support.
+HOST_CXXFLAGS	+=	-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+ifdef FAT_MAC
+#	To build a FAT_MAC JNI library the host system must have installed the
+#	Java support libraries for all of the specified architectures.
+#	Since this is not usually available NO_JAVA is defined.
+NO_JAVA			:=	NO_JAVA
+endif
+
+#	Add this directive if you would like to skip the test for processor
+#	features, based on the CPUID instruction, making some simple, likely
+#	to be true, assumptions about MMX/SSE/SSE2 support.
+#HOST_CXXFLAGS	+=	-DKDU_NOCPUID_TEST
+
+#	Provides MMX/SSE2 speedups.
+HOST_CXXFLAGS	+=	-DKDU_X86_INTRINSICS -msse2
+#	Use instead of the above to avoid stack alignment problems when a
+#	shared library is used in conjunction with a third party application
+#	which does not guarantee the alignment expected of the "-msse2"
+#	option.  This problem should not apply to 64-bit builds.
+#HOST_CXXFLAGS	+=	-DKDU_PENTIUM_GCC
+#	Adds SSE3 support.
+HOST_CXXFLAGS	+=	-msse3 -mssse3
+#	Use instead of the above if SSE3 support is not available.
+#HOST_CXXFLAGS	+=	-DKDU_NO_SSSE3
+
+#	Only use machine n-bit specification if FAT_MAC is not used.
+#	For 32-bit builds.
+#HOST_CXXFLAGS	+=	-m32
+#	For 64-bit builds.
+#HOST_CXXFLAGS	+=	-m64
+
+#	Uncomment to compile without multi-threading.
+#HOST_CXXFLAGS	+=	-DKDU_NO_THREADS
+#	Uncomment if the pthreads support does not provide the schedXXX functions
+#	referenced in the kdu_elemenatry.h file.
+#HOST_CXXFLAGS	+= -DKDU_NO_SCHED_SUPPORT
+
+#	See "Internationalization" in "Compilation_Instructions.txt".
+#HOST_CXXFLAGS	+=	-DKDU_CUSTOM_TEXT
+
+HOST_LDFLAGS	+=	-flat_namespace
+
+#	Only use machine n-bit specification if FAT_MAC is not used.
+#	For 64-bit builds (must match corresponding HOST_CXXFLAGS).
+#HOST_LDFLAGS	+=	-m64
+
+#	Uncomment to use the libtiff library instead of the built-in TIFF support.
+#HOST_CXXFLAGS 	+=	-DKDU_INCLUDE_TIFF
+#	Location of the tiffio.h include file.
+#HOST_INCLUDES	+=	-I/opt/pub/include
+#	Location of the libtiff library.
+#HOST_LIBRARIES	+=	-L/opt/pub/lib -ltiff

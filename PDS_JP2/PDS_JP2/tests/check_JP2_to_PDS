@@ -1,0 +1,191 @@
+#!/bin/csh
+#
+#	JP2_to_PDS checker.
+#
+#	JP2_to_PDS is provided with a source JP2 file that is used to
+#	generate a PDS file. The PDS file is split into label and image data
+#	files. The image data file is compared with the original image data
+#	file split from the original PDS file used to generate the JP2 file.
+#
+#	The source filename must be specified on the command line.
+#
+#	The size of the label in the PDS file must be specified by the
+#	LABEL_RECORDS parameter.
+#
+#	For detailed listings of the test processing use the -Verbose option.
+#
+#	Normally all files generated are deleted on completion of the check
+#	procedure. The -Keep command line argument causes these files to be
+#	kept.
+#
+#	If the check is successful the final exit status from the cmp utility
+#	will be zero. Otherwise there was some problem with JP2_to_PDS the
+#	final file compare did not match.
+#
+#	Author:	Bradford Castalia, UA/PIRL
+#
+#	CVS ID: check_JP2_to_PDS,v 1.6 2007/09/02 00:48:35 castalia Exp
+
+if ($#argv == 0) then
+	Usage:
+	echo "Usage: $0 [-Help] [-Verbose] [-Keep[_PDS]] [<JP2_to_PDS options>] <pathname>"
+	exit 1
+endif
+
+set Verbose = 0
+set JP2_to_PDS_args = ()
+@ Remove_Files = 3
+
+while ($#argv)
+	switch ($argv[1])
+		case -[Kk]*:
+			switch ($argv[1])
+				case *[Pp]*:
+					@ Remove_Files = 1
+					breaksw
+				default:
+					@ Remove_Files = 0
+					breaksw
+			endsw
+			breaksw
+		case -[Hh]*:
+			JP2_to_PDS
+			echo
+			goto Usage
+			breaksw
+		case -[PpLlUuSsMmFf]*:
+			if ("$argv[1]" =~ -[Pp]*) then
+				set arg = $argv[1]
+				shift argv
+				if ($#argv == 0) then
+					Missing_Argument:
+					echo "Missing value for PDS_to_JP2 $arg option."
+					JP2_to_PDS
+					exit 1
+				endif
+				set PDS_File = $argv[1]
+			else
+				set JP2_to_PDS_args = ($JP2_to_PDS_args $argv[1])
+				if ("$argv[1]" =~ -[Ll][Aa]*) then
+					set arg = $argv[1]
+					shift argv
+					if ($#argv == 0) goto Missing_Argument
+					set JP2_to_PDS_args = ($JP2_to_PDS_args $argv[1])
+				endif
+			endif
+			breaksw
+		case -[Vv]*:
+			set Verbose = 1
+			breaksw
+		case -*:
+			echo "Unrecognized argument: $argv[1]"
+			exit 1
+			breaksw
+		default:
+			if ($?JP2_File) then
+				echo "Unrecognized argument: $argv[1]"
+				exit 1
+			endif
+			set JP2_File = $argv[1]
+			breaksw
+	endsw
+	shift argv
+end
+
+if (! $?JP2_File) then
+	echo "No source JP2 file specified."
+	goto Usage
+endif
+if (! -f $JP2_File) then
+	echo "No such file: $JP2_File"
+	exit 1
+endif
+
+set Basename = $JP2_File:r
+if (! $?PDS_File) set PDS_File = $Basename.img
+set Original_PDS_File = ${PDS_File:r}.IMG
+
+if (! -f $Original_PDS_File) then
+	echo "Missing source file for the JP2 file: $Original_PDS_File"
+	exit 1
+endif
+
+
+#	JP2_to_PDS.
+
+if ($Verbose) then
+	echo JP2_to_PDS -f -PDS $PDS_File $JP2_File
+	JP2_to_PDS -f -PDS $PDS_File $JP2_File
+	set exit_status = $status
+	echo "Exit status = $exit_status"
+else
+	JP2_to_PDS -f -PDS $PDS_File $JP2_File >& /dev/null
+	set exit_status = $status
+endif
+if ($exit_status != 0) goto Cleanup
+
+
+#	Split the original PDS file into label and image data segments.
+
+set Label_Records = (`PPVL_report -q LABEL_RECORDS $Original_PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+set Record_Bytes =  (`PPVL_report -q RECORD_BYTES $Original_PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+if ("$Record_Bytes" != "") then
+	@ Original_Label_Size = $Label_Records * $Record_Bytes
+else
+	@ Original_Label_Size = $Label_Records
+endif
+if ($Verbose) then
+	echo
+	echo split_bytes $Original_Label_Size $Original_PDS_File
+	split_bytes $Original_Label_Size $Original_PDS_File
+else
+	split_bytes $Original_Label_Size $Original_PDS_File >& /dev/null
+endif
+
+#	Split the new PDS file into label and image data segments.
+
+set Label_Records = (`PPVL_report -q LABEL_RECORDS $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+set Record_Bytes =  (`PPVL_report -q RECORD_BYTES $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+if ("$Record_Bytes" != "") then
+	@ Label_Size = $Label_Records * $Record_Bytes
+else
+	@ Label_Size = $Label_Records
+endif
+if ($Verbose) then
+	echo
+	echo split_bytes $Label_Size $PDS_File
+	split_bytes $Label_Size $PDS_File
+else
+	split_bytes $Label_Size $PDS_File >& /dev/null
+endif
+
+
+#	Compare the image data segments.
+
+if ($Verbose) then
+	echo
+	echo cmp $Original_PDS_File,$Original_Label_Size-* $PDS_File,$Label_Size-*
+	cmp $Original_PDS_File,$Original_Label_Size-* $PDS_File,$Label_Size-*
+	set exit_status = $status
+	echo "Exit status = $exit_status"
+else
+	cmp -s $Original_PDS_File,$Original_Label_Size-* $PDS_File,$Label_Size-*
+	set exit_status = $status
+endif
+
+
+Cleanup:
+if ($Remove_Files) then
+	rm -f $PDS_File,* $Original_PDS_File,* >& /dev/null
+	if ($Remove_Files != 1) rm -f $PDS_File >& /dev/null
+endif
+
+
+if ($exit_status == 0) then
+	set result = "PASS"
+else
+	set result = "FAIL"
+endif
+echo "${result}: JP2_to_PDS check on $JP2_File"
+
+exit $exit_status

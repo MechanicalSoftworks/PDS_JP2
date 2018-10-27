@@ -1,0 +1,234 @@
+#!/bin/csh
+#
+#	Install the PDS_JP2 binary distribution files.
+#
+#	CVS ID: Installer,v 1.2 2009/03/04 03:21:03 castalia Exp
+
+#	Check for a possible installation location for the libraries.
+set possible_lib_dir = (/usr/local/lib /opt/local/lib /opt/pub/lib)
+set lib_dirs = ()
+set no_write_dirs = ()
+foreach lib ($possible_lib_dir)
+	if (-d $lib) then
+		if (-w $lib) then
+			set lib_dirs = ($lib_dirs $lib)
+		else
+			set no_write_dirs = ($no_write_dirs $lib)
+		endif
+	endif
+end
+if ($#lib_dirs || $#no_write_dirs) then
+	echo
+	if ($#lib_dirs) then
+		echo "Possible installation location for libraries:"
+		foreach lib ($lib_dirs)
+			echo "  $lib"
+		end
+	endif
+	if ($#no_write_dirs) then
+		echo "Possible installation location for libraries"
+		echo "  requiring systems administrator assistance:"
+		foreach lib ($no_write_dirs)
+			echo "  $lib"
+		end
+	endif
+	echo "There may be other possibilities on your system."
+endif
+
+#	Get the installation location from the user.
+Get_Lib_Dir:
+echo
+echo "Where should the libraries be installed?"
+echo -n "Pathname: "
+set lib_dir = $<
+if (X$lib_dir == X) then
+	#	Nothing specified.
+	echo "If you wish to exit the Install procedure enter Control-C."
+	goto Get_Lib_Dir
+endif
+if (! -d $lib_dir) then
+	#	What the user specified is not an existing directory.
+	if (! -e $lib_dir) then
+		echo "The directory $lib_dir"
+		echo "  does not exist."
+		echo -n "Do you want to create the directory? "
+		set response = $<
+		if ("$response" !~ [Yy]*) goto Get_Lib_Dir
+		mkdir -p $lib_dir
+		if ($status) then
+			echo "Unable to create the directory."
+			goto Get_Lib_Dir
+		endif
+	else
+		echo "$lib_dir is not a directory."
+		goto Get_Lib_Dir
+	endif
+endif
+if (! -w $lib_dir) then
+	echo "The directory $lib_dir"
+	echo "  is not writable by you."
+	echo "Either select a different directory"
+	echo "  or have a systems administrator assist you."
+	goto Get_Lib_Dir
+endif
+
+
+#	Check for a possible installation location for the applications.
+set possible_bin_dir = (/usr/local/bin /opt/local/bin /opt/pub/bin)
+set bin_dirs = ()
+set no_write_dirs = ()
+foreach bin ($possible_bin_dir)
+	if (-d $bin) then
+		if (-w $bin) then
+			set bin_dirs = ($bin_dirs $bin)
+		else
+			set no_write_dirs = ($no_write_dirs $bin)
+		endif
+	endif
+end
+if ($#bin_dirs || $#no_write_dirs) then
+	echo
+	if ($#bin_dirs) then
+		echo "Possible installation location for applications:"
+		foreach bin ($bin_dirs)
+			echo "  $bin"
+		end
+	endif
+	if ($#no_write_dirs) then
+		echo "Possible installation location for applications"
+		echo "  requiring systems administrator assistance:"
+		foreach bin ($no_write_dirs)
+			echo "  $bin"
+		end
+	endif
+	echo "There may be other possibilities on your system."
+endif
+
+#	Get the installation location from the user.
+Get_Bin_Dir:
+echo
+echo "Where should the applications be installed?"
+echo -n "Pathname: "
+set bin_dir = $<
+if (X$bin_dir == X) then
+	#	Nothing specified.
+	echo "If you wish to exit the Install procedure enter Control-C."
+	goto Get_Bin_Dir
+endif
+if (! -d $bin_dir) then
+	#	What the user specified is not an existing directory.
+	if (! -e $bin_dir) then
+		echo "The directory $bin_dir"
+		echo "  does not exist."
+		echo -n "Do you want to create the directory? "
+		set response = $<
+		if ("$response" !~ [Yy]*) goto Get_Bin_Dir
+		mkdir -p $bin_dir
+		if ($status) then
+			echo "Unable to create the directory."
+			goto Get_Bin_Dir
+		endif
+	else
+		echo "$bin_dir is not a directory."
+		goto Get_Bin_Dir
+	endif
+endif
+if (! -w $bin_dir) then
+	echo "The directory $bin_dir"
+	echo "  is not writable by you."
+	echo "Either select a different directory"
+	echo "  or have a systems administrator assist you."
+	goto Get_Bin_Dir
+endif
+
+
+echo
+echo -n "Do you want to install the HTML documentation files? "
+set response = $<
+if ("$response" =~ [Yy]*) then
+	Get_Docs_Dir:
+	echo "Where should the docs directory hierarchy be installed?"
+	echo -n "Pathname: "
+	set docs_dir = $<
+	if (X$docs_dir == X) then
+		#	Nothing specified.
+		echo "If you wish to exit the Install procedure enter Control-C."
+		goto Get_Docs_Dir
+	endif
+	if (! -d $docs_dir) then
+		#	What the user specified is not an existing directory.
+		if (! -e $docs_dir) then
+			echo "The directory $docs_dir"
+			echo "  does not exist."
+			echo -n "Do you want to create the directory? "
+			set response = $<
+			if ("$response" !~ [Yy]*) goto Get_Docs_Dir
+			mkdir -p $docs_dir
+			if ($status) then
+				echo "Unable to create the directory."
+				goto Get_Docs_Dir
+			endif
+		else
+			echo "$docs_dir is not a directory."
+			goto Get_Docs_Dir
+		endif
+	endif
+	if (! -w $docs_dir) then
+		echo "The directory $docs_dir"
+		echo "  is not writable by you."
+		echo "Either select a different directory"
+		echo "  or have a systems administrator assist you."
+		goto Get_Docs_Dir
+	endif
+endif
+
+
+echo
+echo "Installing the libraries in $lib_dir ..."
+
+#	Copy the lib directory contents to a temporary directory.
+#	This is done so link files will be preserved
+#	and to make it easy to remove the files if something goes wrong.
+cp -p -R lib $lib_dir/PDS_JP2_libraries
+if ($status) then
+	Remove_PDS_JP2_libraries:
+	echo "Unable to install the libraries."
+	rm -rf $lib_dir/PDS_JP2_libraries
+	exit 1
+endif
+
+#	Move the files from the temporary directory to their install directory.
+mv $lib_dir/PDS_JP2_libraries/* $lib_dir
+if ($status) goto Remove_PDS_JP2_libraries
+rmdir $lib_dir/PDS_JP2_libraries
+
+echo
+echo "Installing the applications in $bin_dir ..."
+
+#	Copy the application files to their install directory.
+cp -p bin/* $bin_dir
+if ($status) then
+	echo "Unable to install the applications."
+	exit 1
+endif
+
+if ($?docs_dir) then
+	echo
+	if ("$docs_dir:t" == PDS_JP2) then
+		set docs_dir = $docs_dir:h
+	endif
+	echo "Installing the documentation in $docs_dir/PDS_JP2 ..."
+	cp -R -p docs/html $docs_dir/PDS_JP2
+	if (! $status) then
+		foreach file (*)
+			if (-f $file) cp $file $docs_dir/PDS_JP2
+		end
+	else
+		echo "Unable to install the documentation."
+	endif
+endif
+
+echo
+echo "The installation has been completed."
+exit 0
+

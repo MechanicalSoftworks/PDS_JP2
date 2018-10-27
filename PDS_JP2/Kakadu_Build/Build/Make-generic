@@ -1,0 +1,185 @@
+#	Kakadu Software Build Configuration
+#
+#	Host options for generic build.
+#
+#	PIRL CVS ID: Make-generic,v 1.7 2012/08/23 23:38:41 castalia Exp
+
+$(warning >>> WARNING <<< Using generic build options (i.e. guessing)!)
+
+#	Installation base directory.
+INSTALL_DIR				?=	
+#	For finer control of the various installation directories
+#	set here, on the command line or as environment variables:
+#BIN_DIR				?=	$(INSTALL_DIR)/bin
+#LIB_DIR				?=	$(INSTALL_DIR)/lib
+#INCLUDE_DIR			?=	$(INSTALL_DIR)/include
+#DOCS_DIR				?=	$(INSTALL_DIR)/docs
+
+#	Uncomment either or both library build selections.
+STATIC					:=	STATIC
+SHARED					:=	SHARED
+
+
+#	C++ compiler.
+#		Comment out to use the system's default compiler.
+CC						:=	g++
+
+#	Additional include file paths.
+HOST_INCLUDES			:=	
+
+#	Whether to link programs using SHARED or STATIC libraries.
+#		It's generally best to use the system default unless static is required.
+#LIBRARY_SELECTION		?=	STATIC
+
+#	Shared (dynamic linking) library options.
+#SHARED_LIBRARY_EXTENSION	?=	so
+#SHARED_LIBRARY_OPTION		:=	-shared
+
+#	Compiler flags.
+HOST_CXXFLAGS			+=	-Wall -Wno-uninitialized
+HOST_CXXFLAGS			+=	-DNDEBUG
+#	Large file support.
+HOST_CXXFLAGS			+=	-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+#	No multi-threading.
+#HOST_CXXFLAGS			+=	-DKDU_NO_THREADS
+#	Uncomment if the pthreads support does not provide the schedXXX functions
+#	referenced in the kdu_elemenatry.h file.
+#HOST_CXXFLAGS			+= -DKDU_NO_SCHED_SUPPORT
+
+
+#		Sun/Solaris
+ifeq ($(OS),SunOS)
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/usr/java
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/solaris
+
+#	Use -g for debugging.
+HOST_CXXFLAGS			+=	-O2
+
+#	VIS SIMD speedups.
+#HOST_CXXFLAGS			+=	-DKDU_SPARCVIS_GCC
+#	Processor specification.
+#HOST_CXXFLAGS			+=	-mcpu=ultrasparc
+#HOST_CXXFLAGS			+=	-mcpu=ultrasparc3
+
+#	For 64-bit shared library.
+#HOST_LDFLAGS			+=	-mcpu=v9
+#HOST_LDFLAGS			+=	-m64
+
+#	Uncomment for 64-bit libraries that should have a special suffix.
+#64_BIT_SUFFIX			:=	_64
+endif
+
+
+#		Apple/Macintosh
+ifeq ($(OS),Darwin)
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include
+
+#	Use -g for debugging.
+HOST_CXXFLAGS			+=	-O3
+
+ifeq ($(ARCH),Power_Macintosh)
+HOST_CXXFLAGS			+=	-DKDU_ALTIVEC_GCC -faltivec -maltivec
+#	G4 CPU.
+#HOST_CXXFLAGS			+=	-mtune=G4
+#	G5 CPU.
+#HOST_CXXFLAGS			+=	-fast
+
+SHARED_LIBRARY_EXTENSION	?=	dylib
+SHARED_LIBRARY_OPTION		:=	-dynamiclib
+
+HOST_LDFLAGS			+=	-flat_namespace
+HOST_LDFLAGS			+=	-single_module
+HOST_LDFLAGS			+=	-current_version $(VERSION)
+
+else
+#	x86 CPU.
+HOST_CXXFLAGS			+=	-DKDU_X86_INTRINSICS -msse2
+#	Use instead of the above to avoid stack alignment problems when a
+#	shared library is used in conjunction with a third party application
+#	which does not guarantee the alignment expected of the "-msse2"
+#	option.  This problem should not apply to 64-bit builds.
+#HOST_CXXFLAGS			+=	-DKDU_PENTIUM_GCC
+#	Adds SSE3 support.
+HOST_CXXFLAGS	+=	-msse3 -mssse3
+#	Use instead of the above if SSE3 support is not available.
+#HOST_CXXFLAGS	+=	-DKDU_NO_SSSE3
+
+#	Some Linux installations disable the CPUID instruction by default;
+#	Add this directive if you would like to skip the test for processor
+#	features, based on the CPUID instruction, making some simple, likely
+#	to be true, assumptions about MMX/SSE/SSE2 support.
+#HOST_CXXFLAGS			+=	-DKDU_NO_CPUID_TEST
+
+#	For 32-bit builds.
+#HOST_CXXFLAGS			+=	-m32
+#	For 64-bit builds.
+#HOST_CXXFLAGS			+=	-m64
+endif
+endif
+
+
+#		Linux
+ifeq ($(OS),Linux)
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/usr/java
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+
+#	Use -g for debugging.
+HOST_CXXFLAGS			+=	-O2
+
+ifneq (,$(findstring 86,$(PLATFORM)))
+HOST_CXXFLAGS			+=	-DKDU_X86_INTRINSICS -msse2
+#	For Intel (i*86) and AMD (x86{_64}) processors.
+#	Use instead of the above to avoid stack alignment problems when a
+#	shared library is used in conjunction with a third party application
+#	which does not guarantee the alignment expected of the "-msse2"
+#	option.  This problem should not apply to 64-bit builds.
+#HOST_CXXFLAGS			+=	-DKDU_PENTIUM_GCC
+#	Adds SSE3 support.
+HOST_CXXFLAGS	+=	-msse3 -mssse3
+#	Use instead of the above if SSE3 support is not available.
+#HOST_CXXFLAGS	+=	-DKDU_NO_SSSE3
+
+#	Some Linux installations disable the CPUID instruction by default;
+#	Add this directive if you would like to skip the test for processor
+#	features, based on the CPUID instruction, making some simple, likely
+#	to be true, assumptions about MMX/SSE/SSE2 support.
+#HOST_CXXFLAGS			+=	-DKDU_NO_CPUID_TEST
+endif
+endif
+
+
+#		FreeBSD
+ifeq ($(OS),FreeBSD)
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/usr/java
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/freebsd
+
+#	Use -g for debugging.
+HOST_CXXFLAGS			+=	-O2
+
+ifneq (,$(findstring 86,$(PLATFORM)))
+HOST_CXXFLAGS			+=	-DKDU_X86_INTRINSICS -msse2
+#	For Intel (i*86) and AMD (x86{_64}) processors.
+#	Use instead of the above to avoid stack alignment problems when a
+#	shared library is used in conjunction with a third party application
+#	which does not guarantee the alignment expected of the "-msse2"
+#	option.  This problem should not apply to 64-bit builds.
+#	Adds SSE3 support.
+#HOST_CXXFLAGS			+=	-DKDU_PENTIUM_GCC
+HOST_CXXFLAGS	+=	-msse3 -mssse3
+#	Use instead of the above if SSE3 support is not available.
+#HOST_CXXFLAGS	+=	-DKDU_NO_SSSE3
+
+#	Some Linux installations disable the CPUID instruction by default;
+#	Add this directive if you would like to skip the test for processor
+#	features, based on the CPUID instruction, making some simple, likely
+#	to be true, assumptions about MMX/SSE/SSE2 support.
+#HOST_CXXFLAGS			+=	-DKDU_NO_CPUID_TEST
+endif
+endif
+

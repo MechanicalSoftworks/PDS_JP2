@@ -1,0 +1,393 @@
+#	UA HiRISE Subsystem Makefile template
+#
+#	gmake syntax
+#
+#	This template Makefile describes the interface to the HiRISE software
+#	Build subsystem used at HiROC. The interface is implemented by the
+#	Makefile.conf file of the Build subsystem which must be included by
+#	the user's Makefile. For details of how the Build subsystem works,
+#	see the Makefile.conf file.
+#
+#	This template file may be copied as the basis for a user's Makefile.
+#	It will need to be edited for the specific use it is expected to
+#	server. 
+#
+#	CVS ID: Makefile.template,v 2.7 2006/09/07 02:37:12 castalia Exp
+
+
+#	Identification:
+
+#	The name of the subsystem.
+#
+#	This is required for all top level subsystem Makefiles. It is used
+#	to identify subsystem-specific installation directories.
+#
+#	Makefiles in subdirectories that do not do any files installation
+#	- e.g. tests - are not required to provide this variable, but may
+#	do so. However, these "local only" Makefiles should define TITLE
+#	if they do not define SUBSYSTEM so they will be properly identified
+#	during operations.
+SUBSYSTEM			:=	Subsystem
+
+#	Provide a VERSION file than contains the subsystem version number.
+#	The version number begins a line with nothing else on it. This will
+#	be used to create the SUBSYSTEM_VERSION value. If the subsystem
+#	VERSION file is not present, or does not contain a recognizable
+#	version number, the SUBSYSTEM_VERSION value will be set to 0.0 as
+#	a warning flag.
+
+#	The CVS Revision number of your Makefile (and a syntax hack).
+R:=R
+MAKEFILE_REVISION	:=	2.7
+
+
+#	Location:
+
+#	Makefiles in subdirectories that contain or build files that will be
+#	installed need to specify the location of the subdirectory relative
+#	to the top level directory of the project location. This is used to
+#	determine the default installation location (INSTALL_DIR) of the
+#	sofware.
+#
+#	This parameter is not required for a subsystem primary Makefile that
+#	is not in any subdirectories; the default of ".." is automatically
+#	provided. But in a Makefile that is, for example, in an immediate
+#	subdirectory of the top subsystem directory, this parameter would be
+#	provided with a value of "../..".
+PROJECT_ROOT		=	..
+
+
+#	Application programs to be built:
+#
+#	The names of the application programs built by this subsystem.
+#
+#	APPLICATIONS are built by the .applications target. There must be a
+#	source file with the same name (without extension) as each
+#	application.
+#
+#	APPLICATION is a synonym for APPLICATIONS; the former is typically
+#	used when there is only one application program being built.
+#	Installation of APPLICATIONS is done by the .applications_install
+#	target.
+APPLICATIONS		=	program
+
+#	Source code files extension: cc (the default) or c.
+#
+#	All source code files used by a Makefile must be of one type (except
+#	.java). Subdirectories with their own Makefiles may each have
+#	different SOURCE_CODE types. The type is used to identify any
+#	HEADERS: *.cc source code files may have *.hh header files and *.c
+#	source code files may have *.h header files. The type is also used
+#	select the appropriate compiler: *.cc files use g++, *.c files use
+#	gcc.
+SOURCE_CODE			=	
+
+#	Any additional object files required for each application program.
+#	The name of each variable is <application>_OBJECTS.
+#
+#	If only one application program is being built the
+#	APPLICATION_SOURCES variable can be used to list the names of the
+#	source files from which object files required by the program are to
+#	be compiled. All source code files have the same SOURCE_CODE type.
+#	APPLICATION_SOURCES will always include the source file that has the
+#	same name (without extension) as the application, so this source
+#	file need not be listed.
+program_OBJECTS		=	program_object_1.o \
+						program_object_2.o
+
+#	Compiler preprocessor (cpp) flags.
+#
+#	Used for preparing C/C++ source code files for compilation.
+#	Typically used to set macro symbols for conditional compilation. For
+#	example, the DEBUG symbol is typically used to conditionally compile
+#	sequences of code used to report information used for debugging. The
+#	debug target, which depends on the .applications target, will
+#	automatically define the DEBUG symbol to the value of the DEBUG
+#	variable, which is set to DEBUG_ALL by default, and add it to the
+#	CPPFLAGS list. To set a different DEBUG value appropriate for the
+#	code being compiled use this pattern: gmake DEBUG=DEBUG_FOO debug.
+#
+#	Add to this variable for special needs.
+CPPFLAGS			+=	
+
+#	Compiler flags.
+#
+#	CXXFLAGS is used when compiling C++ code with g++ and CFLAGS is used
+#	for compiling C code with gcc.
+#
+#	The appropriate flags for the target being compiled are
+#	automatically added to the list. The value of the OPTIMIZATION
+#	variable is also included; by default it is set to -O, or -g for the
+#	debug target. Set an OPTIMIZATION variable (in the Makefile or as an
+#	environment variable) if you want all non-debug compilation to use a
+#	specific optimization setting.
+#
+#	Add to these variables for special needs.
+CXXFLAGS			+=	
+CFLAGS				+=
+
+
+#	Library pathnames for linking.
+#	The subsystem library, if specified, will automatically be included.
+#
+#	WARNING: When linking against libraries that have separate 64-bit
+#	versions append $(64) to their names. This will ensure that the
+#	correct version will be selected depending on whether 64-bit or
+#	32-bit builds are being done. See the 64-bit builds section, below.
+#
+LIBRARIES			+=	-L$(PROJECT_ROOT)/lib -lHiRISE$(64) \
+						-L$(PIRL_ROOT)/lib -lPIRL++$(64)
+
+#	Include files.
+#
+#	External (. is automatically included) header include pathnames.
+INCLUDE				+=	-I$(PROJECT_ROOT)/include
+
+
+#	Library to be built:
+#
+#	Do not include the "lib" prefix or any extension.
+#
+#	A static object (archive) library is built by the .library target;
+#	installation is done by the .library_install target.
+#	A shared/dynamic library is built by the .shared_library target;
+#	installation is done by the .shared_library_install target.
+#	Both libraries are built by the .libraries target;
+#	installation is done by the .libraries_install target.
+LIBRARY				=	library
+
+#	Source code files used to build the library objects.
+#
+#	HEADERS are defined from this list.
+#	Installation of HEADERS is done by the .headers_install target.
+LIBRARY_SOURCES		=	object_a.cc \
+						object_b.cc
+
+
+#	Java files:
+#
+#	The Java source code (*.java) files to build a Java Package.
+#	JAVA_CLASSES are defined from this list.
+#		Compiling the JAVA_CLASSES is done by the java target.
+JAVA_SOURCES		=	class_a.java \
+						class_b.java
+
+#	The CLASSPATH to be used when compiling Java files.
+#
+#	By default the JPATH is set to include HiRISE and PIRL packages
+#	and the JFreeChart jar.
+JPATH				=	
+
+#	Special flags for the Java compiler (javac).
+JFLAGS				+=	
+
+
+#	Script (non-compiled) executable files.
+#
+#	Installation of SCRIPTS is done by the .scripts_install target
+#	to the bin directory.
+SCRIPTS				=	
+
+#	PERL scripts containing POD to use in the generation of HTML
+#	and man page documentation files. If not specified, the value
+#	of SCRIPTS will be used.
+POD_SCRIPTS			=
+
+#	Configuration files.
+#
+#	Installation of CONFIGS is done by the .configs_install target
+#	to the INSTALL_DIR/CONFIG_DIR/SUBSYSTEM directory.
+CONFIGS				=	
+
+
+#	Targets:
+
+#	The Project Makefile configuration includes targets for most routine
+#	operations. These come in two forms: regular and dotted. The regular
+#	target is generally invoked by a user on the command line and
+#	includes reporting niceties. The dotted target does the real work
+#	and is usually what is used in the subsystem Makefile.
+#
+#	To add functionality to the standard targets define your own local
+#	targets with suitable rules and make these targets dependents of the
+#	appropriate standard targets. Do not add rules to the standard
+#	targets directly.
+
+#	64-bit builds.
+#
+#	If your subsystem requires building 64-bit versions of applications
+#	and libraries, define the following symbol (this symbol is ignored
+#	on systems that do not support building both 32-bit and 64-bit
+#	executables):
+64_BIT_BUILDS		=	true
+
+#	By default, both 32-bit and 64-bit binaries will be built. The files
+#	containing 64-bit versions of the binaries will have "_64" the
+#	64_BIT_FILES variable appended to application names (unless
+#	32_BIT_DEFAULT is defined), library names (before the extension) and
+#	object file names (after the extension).
+#
+#	If 32_BIT_ONLY is defined, then only 32-bit builds will be produced.
+#	If 64_BIT_ONLY is defined, then only 64-bit builds will be produced.
+#
+#32_BIT_ONLY		=	true
+64_BIT_ONLY			=	true
+
+#	If 32_BIT_DEFAULT is defined, the APPLICATIONS names will be used
+#	unchanged for the 32-bit versions of applications and the 64-bit
+#	versions will have "_64" appended to their names. Otherwise the
+#	32-bit versions of applications will be appended with "_32" and the
+#	64-bit executables will use the APPLICATIONS names unchanged.
+
+
+#	The conventional default (first) target.
+#
+#	This can be replaced with one of:
+#		applications to build the application programs.
+#		libraries to build both static and dynamic libraries.
+#		library to build a static (.a) library.
+#		shared_library to build a dynamic (.so) library.
+#		java to build the Java Package classes.
+all:
+
+#	Specify what is to be built using any combination of:
+#		.applications for the application programs.
+#			The APPLICATIONS list which depends on the application objects
+#			compiled from the APPLICATION_SOURCES plus any program_OBJECTS,
+#			included during linking, and .libraries, included in LDLIBS
+#			along with LIBRARIES for linking.
+#			A 64-bit version (*_64) is built for sun4u systems.
+#		.library for a static (libLIBRARY.a) library.
+#			The LIBRARY_SOURCES are compiled into LIBRARY_OBJECTS (*.o)
+#			files and placed in the STATIC_LIBRARY object archive file.
+#			A 64-bit version (*_64.a) is built for sun4u systems.
+#		.shared_library for a dynamic (libLIBRARY.so) library.
+#			The LIBRARY_SOURCES are compiled into SHARED_LIBRARY_OBJECTS
+#			located in a SHARED_DIR subdirectory using the -fPIC compiler
+#			flag then linked -shared into a SHARED_LIBRARY file.
+#			A 64-bit version (*_64.so) is built for sun4u systems.
+#		.libraries for both static and dynamic libraries.
+#		.java for the Java Package classes.
+#			The JAVA_SOURCES are compiled (javac) with -classpath JPATH.
+#
+#	Add or substitute your own targets as needed.
+.all:			.libraries \
+				.applications \
+				.java_classes
+
+
+#	Installation:
+
+#	If your subsystem does not require HiRISE standard directories -
+#	Configuration, Data, and Logs - define the following symbols:
+#NO_CONFIG_DIR	=	true
+#NO_DATA_DIR	=	true
+#NO_LOGS_DIR	=	true
+
+#	Host dependent binaries and executables (applications, libraries and
+#	scripts) are installed separately from shared text files (headers
+#	and configuration files). Only binaries and executables should be
+#	installed by the .bin_install target.
+#
+#	Specify shared text files for installation using any combination of:
+#		.headers_install - library header files to include dir:
+#			the HEADERS list plus header files (*.hh or *.h) for the
+#			the LIBRARY_SOURCES list.
+#		.configs_install - files to CONFIG_DIR/SUBSYSTEM directory:
+#			the CONFIGS list.
+.install:		.bin_install \
+				.headers_install
+
+#	Specify binaries and executables that are to be installed using any
+#	combination of:
+#		.applications_install - to bin directory:
+#			the APPLICATIONS list.
+#		.libraries_install - both static and dynamic libraries.
+#		.library_install - static (*.a) library to lib directory:
+#			the LIBRARY built by .library on which it depends.
+#		.shared_library_install - dynamic (*.so) library to lib directory:
+#			the SHARED_LIBRARY from LIBRARY built by .shared_library on
+#			which it depends, plus a *-SUBSYSTEM_VERSION link.
+#		.scripts_install - executable script files to bin directory:
+#			the SCRIPTS list.
+#
+#	Add your own targets as needed.
+.bin_install:	.libraries_install \
+				.applications_install \
+				.scripts_install
+
+
+#	Documentation:
+
+#	Documentation files must be located in a DOCS_DIR subdirectory.
+#	Web (HTML) files go under DOCS_HTML_DIR; manual files go under
+#	DOCS_MAN_DIR in the man1 section.
+#
+#	If the subsystem provides documentation files (not required) you must
+#	provide your own target(s) as .docs dependencies.
+#
+#	If you have c/c++ source code with Doxygen style documentation
+#	comments the .doxygen target may be used to generate HTML
+#	documentation files and/or as the basis for customization. Doxygen
+#	uses a Doxyfile for configuring the many options of its operation.
+#	If you do not provide one, one will be automatically provided based
+#	on the Doxyfile.template in the Build subsystem. Doxygen also allows
+#	for a main page that contains an overview of the subsystem as well as
+#	a custom page header (amongst its many other features). The Build
+#	subsystem will automatically provide a basic main page with the
+#	appropriate boilerplate (Overview.doxygen) and a nice page header
+#	with a HiRISE logo (from the Header.doxygen.template). These files
+#	can be copied and customized to better represent the particular
+#	subsystem being documented.
+#
+#	If you have PERL script files (SCRIPTS) with embedded POD the .pod
+#	target may be used to generate HTML and man page documentation files.
+#	To only process some of the script files - i.e. if only some of the
+#	file in the SCRIPTS list, which is used by default, contain embedded
+#	POD documentation, - you can provide a POD_SCRIPTS list and only the
+#	files in that list will be processed.
+#
+#	Provide your own target(s) as appropriate for documentation files.
+.docs:			
+
+#	The contents of the docs subdirectory will be copied to the
+#	DOCS_INSTALL_DIR install location.
+#
+#	Add your own targets as needed.
+.docs_install:	
+
+
+#	Cleaning:
+
+#	Basic cleaning. Typically done to rebuild everything from scratch.
+#
+#	All applications and libraries will be removed as well as all object
+#	(*.o), class (*.class), C/C++ source include file dependency lists
+#	(*.d), core, and various temporary (*.tmp, *.x~~) files.
+#
+#	Add your own targets for special files.
+.clean:
+
+#	Thorough cleaning. Typically done to produce a distribution file set.
+#	A more complete cleaning is applied, including the docs subdirectory.
+#
+#	Add your own targets to clean out subdirectories.
+.dist_clean:	.clean_subdirectories
+clean_subdirectories:
+	(cd tests;   $(MAKE) clean)
+
+
+#	Add any local targets that do not refer to actual files.
+.PHONY:			clean_subdirectories
+
+
+#	Project Makefile configuration.
+#
+#	If you define targets that depend on Project Makefile variables, such
+#	as .docs depending on a file in DOCS_HTML_DIR, include the Project
+#	Makefile configuration before the dependencies are used, but not
+#	before your local variables are defined. Usually this file is
+#	included at the end of the subsystem Makefile.
+#
+#	This is where the magic happens. Inspect this file for the details.
+include			../Build/Makefile.conf

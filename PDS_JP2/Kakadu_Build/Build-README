@@ -1,0 +1,226 @@
+Kakadu Makefiles from PIRL
+for Kakadu version 6.4.x
+
+
+>>> Be sure to use the Kakadu_Build distribution that corresponds to the
+version of the Kakadu software distribution being built.
+
+
+This package contains a set of Makefiles that were developed as an
+alternative to the Makefiles distributed with the Kakadu source code.
+They use the GNU make (gmake) syntax. They are based on the original
+Makefiles in that they are expected to build the same libraries and
+applications and install them along with the software header files and
+documentation. They also use the same source code structure of the
+originals. The files in this package are organized according to this same
+structure.
+
+This Build package centralizes the build environment configuration into a
+single set of host architecture specific files that only contain the
+necessary specifications and provides a generic configuration using "best
+guess" specifications. A test procedure is provided that offers hints for
+configuring the build environment. An arbitrary installation location may
+be specfied. The libraries are installed with conventional version number
+filename extensions along with Kakadu name links.
+
+To install the Kakadu PIRL Makefiles unpack the tarball distribution
+file in the root directory of the Kakadu source code distribution. The
+Kakadu software is proprietary and may be obtained via the Kakadu
+Software web site (http://www.kakadusoftware.com/).
+
+Integrated build system -
+
+All the Makefiles, and all the software built by these Makefiles, resides
+in "Build" directories that are siblings of the Kakadu "make"
+directories. The Kakadu "make" system is not affected in any way.
+
+A top level Build/Makefile is provided that will manage the operation of
+all the other Makefiles. This enables the entire Kakadu software system
+to be built from the top level Build directory with a single "gmake"
+command (The GNU make software may be known by some other name - such as
+"make" - on various systems; the PIRL Makefiles require GNU make). The
+applications, libraries, header files and documentation can all be
+installed with a single "gmake install" command, which will build the
+required files if that has not yet been done. Each section of the Kakadu
+distribution - coresys, managed and apps in subdirectories of the same
+names - may be built and installed separately using the Build/Makefile in
+the subdirectory of the corresponding section.
+
+The installation root directory can be specified with the INSTALL_DIR
+environment variable or this may be specified as a build variable on the
+gmake command line; by default the Kakadu software source code
+installation (PROJECT_ROOT) directory will be the INSTALL_DIR. Under the
+INSTALL_DIR directory subdirectories will be used (all directories will
+be created if they do not exist) to contain the installation files: bin
+for application programs, lib for libraries, include for source code
+include headers, docs/Kakadu for the documentation, and kdu_jni for the
+Java API class files. However, if no INSTALL_DIR is explicitly specified
+an <OS>-<arch> - where <OS> is the name of the operating system (from
+uname -s) and <arch> is the platform machine architecture name (from
+uname -m) - subdirectory of bin and lib will be used to keep binary files
+separate for multi-archictecture environments. In addition, a
+(PROJECT_ROOT)/java/kdu_jni directory is created by the kdu_hyperdoc
+utility (built and run in the "managed" section) and populated with Java
+Native Interface (JNI) source code files. The kdu_hyperdoc utility also
+generates the HTML documentation files under the
+(PROJECT_ROOT)/documentation directory. To skip the installation of the
+documentation files set NO_DOCS to any value (as an environment variable
+or on the gmake command line).
+
+The top level Build/Makefile provides targets for running selected parts
+of the build and install process: The libraries target will build the
+static (static_libraries target) and shared object (shared_libraries
+target) libraries of the coresys and managed sections, and the programs
+target will build the application programs of the apps section (the
+libraries must already have been built). The bin_install target will
+install just the binary files of all sections, which is convenient when,
+for example, installing for multiple architectures and the header files
+and documentation do not need to be re-installed. The docs target will
+generate the documentation files, java API source files and collect
+together the header files. The clean target will remove all architecture
+dependent files that have been built (this does not remove installed
+files) in preparation for a new build, for example when building for
+multiple architectures.
+
+Modularized platform configuration -
+
+The Build/Mafefile for each Kakadu section includes a Make-<OS>-<arch>
+file from the (PROJECT_ROOT)/Build directory that contains the platform
+build configuration information for the corresponding operating system
+and architecture. Each section Makefile will automatically select the
+appropriate platform configuration file to include by using "uname -s" to
+determine the <OS> and "uname -m" to determine the <arch>. Platform build
+configuration files are provided for the following architectures:
+
+  <OS>     <arch>
+  -------  ---------------------
+  Darwin   Power_Macintosh (ppc)
+  Darwin   i386
+  Darwin   x86_64
+  FreeBSD  i386
+  Linux    i686
+  Linux    x86_64
+  SunOS    i86pc
+  SunOS    sun4u
+
+The settings in these files have been selected for the lowest common
+denominator system in use at PIRL for each category. Review the
+appropriate file(s) and edit as suitable to optimize for the system(s)
+where the Kakadu software will be used and/or to adjust for system
+specifics.
+
+For example, by default the GNU C++ compiler (g++) is selected with the
+CC macro but many sites use different compiler systems (often named
+"cc"). The location of the Java installation's jni.h file may have to be
+specified using the HOST_INCLUDES macro. N.B.: The jni.h file typically
+includes a platform specific file (probably named jni_md.h) that may be
+located in a subdirectory with a platform name; a link from the location
+of the jni.h file to the platform specific file will be needed if it is
+to be found at compile time (the same applies to the jawt.h file and its
+jawt_md.h platform specific file). If a Java Native Interfaces library
+is not to be built - possibly because a Java SDK is not present on the
+system - define the NO_JAVA token (to any value; 1 will do) as an
+environment variable or on the gmake command line.
+
+There are many possible platform specific configuration specifications
+and performance tuning options. Read the Compiling_Instructions.txt file
+that is included with the Kakadu source code distribution. Knowing the
+correct configuration information requires a detailed understanding of
+the platform. In the (PROJECT_ROOT)/Build/test directory is a Makefile
+that will include the appropriate Make-<OS>-<arch> file and attempt to
+build and run a little test utility that reports the results from the
+Kakadu host system architecture identification mechanism. This can be
+used as rough test of the platform build configuration.
+
+If a Make-<OS>-<arch> file does not exist for the system being used a
+link of the appropriate name will automatically be created to the
+Make-generic file that is provided (and a warning will be reported); the
+generic configuration is a "best-guess" with configuration sections for
+the <OS>-<arch> categories used at PIRL. However, it is best (and likely
+necessary) to copy a platform build configuration file similar to the
+platform you will be configuring to a file with the appropriate name and
+use it as a starting point for providing the required configuration
+information.
+
+Apple Mac (Darwin) fat ("universal") binaries -
+
+For Apple Mac systems support is included for building fat binaries of
+the libraries, both static and dynamic, and applications. This enables
+the libraries and applications to work correctly on all Apple Mac
+platforms that are compatibile with the included build architectures.
+
+To enable this feature, in the Make-Darwin-xxx configuration file set the
+FAT_MAC token to the list of architectures that are to be built. Then
+provide a Make-Darwin-fat-<arch> configuration file for each architecture
+to be built. For example, in the Make-Darwin-i386 configuration file:
+
+FAT_MAC ?= -arch i386 \
+           -arch ppc
+
+The Make-Darwin-fat-i386 file can be provided by a soft link to the
+Make-Darwin-i386 file, unless there are differences that are to be
+applied when building the fat binaries. The Make-Darwin-fat-ppc configuration
+file might be provided by a soft link to the Make-Darwin-Power_Macintosh
+file, or by copying this file and tuning it to the needs of the
+cross-compilation environment.
+
+Shared object library naming -
+
+At the root of the Kakadu software source code installation (PROJECT_ROOT)
+a VERSION file is provided that specifies the software version
+identification as used by the Kakadu "make" files, as well as a
+corresponding Unix conventional version identification. Dynamic shared
+object libraries are installed with names that contain the conventional
+Unix version identification. Links are provided with the library names
+used by the Kakadu "make" files to provide a consistent set of library
+names. Applications built using the Kakadu library names will work as
+expected.
+
+The PIRL Makefiles name both the shared object libraries and object
+archive libraries with the lib<name>.<ext>.<version> pattern; where
+<name> is the name of the library, <ext> is "so" for dynamically linked
+shared object libraries (or dylib on Macintosh platforms) and "a" for
+statically linked object archive libraries, and <version> is the dot
+delimited numerical version number of the software distribution specified
+in the top level VERSION file. When the libraries are installed a link
+name that does not include the final .<version> segment is provided that
+points to the version-named file. When applications are built using the
+conventional -l<name> library linker reference they always find the
+current versions without having to change their build specifications. The
+same applies to applications at runtime that are using the dynamic
+linker/loader to find the library files; unless they have been built to
+link to a specific library they select the current version without having
+to rebuild the application (unless there has been a significant change to
+a required library) due to a library name change.
+
+The platform build configuration file may specify a LIBRARY_NAME_SUFFIX
+to be appended to the end of the library <name>. At PIRL the "_64" suffix
+is used on the Solaris/SPARC platform to distinguish 64-bit libraries
+from 32-bit libraries.
+
+Caveats -
+
+The Makefiles in this package are used to build the Kakadu version 6.4.x
+software distribution at PIRL. Makefiles used for different versions of
+the Kakadu software are distributed in packages with a corresponding
+version number in their name. The Kakadu software distribution may make
+significant alterations to its code organization structure or other build
+requirements so the PIRL Makefiles may not work correctly with other
+versions of the distribution without being appropriately adapted to the
+new requirements. And the PIRL Makefiles can not be guaranteed to produce
+optimal or even correct results. There is no warranty whatsoever,
+expressed or implied, provided with this package.
+
+
+Bradford Castalia
+Castalia@Arizona.edu
+Principal Systems Analyst
+Planetary Image Research Laboratory
+Department of Planetary Sciences
+University of Arizona
+1541 E. University Blvd.
+Tucson, Arizona  85721-0063
+
+
+PIRL CVS ID: Build-README,v 1.9 2012/08/24 01:37:23 castalia Exp
+

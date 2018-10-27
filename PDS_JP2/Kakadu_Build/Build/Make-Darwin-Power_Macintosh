@@ -1,0 +1,74 @@
+#	Kakadu Software Build Configuration
+#
+#	Host options for Darwin Power_Macintosh systems.
+#
+#	PIRL CVS ID: Make-Darwin-Power_Macintosh,v 1.7 2012/08/23 23:38:41 castalia Exp
+
+#	Installation base directory.
+INSTALL_DIR		?=	
+#	For finer control of the various installation directories
+#	set here, on the command line or as environment variables:
+#BIN_DIR		?=	$(INSTALL_DIR)/bin
+#LIB_DIR		?=	$(INSTALL_DIR)/lib
+#INCLUDE_DIR	?=	$(INSTALL_DIR)/include
+#DOCS_DIR		?=	$(INSTALL_DIR)/docs
+
+#	Uncomment either or both library build selections.
+STATIC			:=	STATIC
+SHARED			:=	SHARED
+
+
+#	C++ compiler.
+#		Comment out to use the system's default compiler.
+CC				:=	g++
+
+#	Additional include file paths.
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include
+
+#	Whether to link programs using SHARED or STATIC libraries.
+#		It's generally best to use the system default unless static is required.
+#LIBRARY_SELECTION			?=	STATIC
+
+SHARED_LIBRARY_EXTENSION	?=	dylib
+SHARED_LIBRARY_OPTION		:=	-dynamiclib \
+								-current_version $(VERSION) \
+								-single_module
+
+HOST_CXXFLAGS 	+=	-O3 -DNDEBUG -Wall -Wno-uninitialized
+
+#	Avoids Unix pthreads symbol compatibility problem
+#		when building fat binaries on later OS versions.
+HOST_CXXFLAGS	+=	-mmacosx-version-min=10.4
+HOST_LDFLAGS	+=	-mmacosx-version-min=10.4
+
+#	Large file support.
+HOST_CXXFLAGS	+=	-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+#	CPU type tuning. N.B.: There are many tuning options (see man gcc).
+#	G5 CPU
+#HOST_CXXFLAGS	+=	-fast
+#	G4 CPU.
+#HOST_CXXFLAGS	+=	-mtune=G4
+
+#	If the Altivec vector processing unit is available.
+#HOST_CXXFLAGS	+=	-DKDU_ALTIVEC_GCC -faltivec -maltivec
+
+#	Uncomment to compile without multi-threading.
+#HOST_CXXFLAGS	+=	-DKDU_NO_THREADS
+#	Uncomment if the pthreads support does not provide the schedXXX functions
+#	referenced in the kdu_elemenatry.h file.
+#HOST_CXXFLAGS	+= -DKDU_NO_SCHED_SUPPORT
+
+#	See "Internationalization" in "Compilation_Instructions.txt".
+#HOST_CXXFLAGS	+=	-DKDU_CUSTOM_TEXT
+
+HOST_LDFLAGS	+=	-flat_namespace
+
+#	Uncomment to use the libtiff library instead of the built-in TIFF support.
+#HOST_CXXFLAGS 	+=	-DKDU_INCLUDE_TIFF
+#	Location of the tiffio.h include file.
+#HOST_INCLUDES	+=	-I/opt/pub/include
+#	Location of the libtiff library.
+#HOST_LIBRARIES	+=	-L/opt/pub/lib -ltiff

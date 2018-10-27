@@ -1,0 +1,180 @@
+#!/bin/csh
+#
+#	Test PDS_to_JP2.
+#
+#
+#	Author:	Bradford Castalia, UA/PIRL
+#
+#	CVS ID: test_PDS_JP2,v 1.3 2007/11/06 00:46:37 castalia Exp
+
+set Verbose = 0
+
+while ($#argv)
+	switch ($argv[1])
+		case -[Ww]*:
+			set arg = $argv[1]
+			shift argv
+			if ($#argv == 0) then
+				Missing_Argument:
+				echo "Missing value for $arg option."
+				exit 1
+			endif
+			set Width = $argv[1]
+			breaksw
+		case -[Hh]*:
+			set arg = $argv[1]
+			shift argv
+			if ($#argv == 0) goto Missing_Argument
+			set Height = $argv[1]
+		case -[Rr]*:
+			set Data_Mode = "random"
+			breaksw
+		case -[Ll]*:
+			set Data_Mode = "linear"
+			breaksw
+		case -[Vv]*:
+			set Verbose = 1
+			breaksw
+		default:
+			echo "Unrecognized argument: $argv[1]"
+			exit 1
+			breaksw
+	endsw
+	shift argv
+end
+
+
+if (! $?Width) then
+	if ($?Height) then
+		set Width = $Height
+	else
+		set Width = 32
+	endif
+endif
+if (! $?Height) set Height = $Width
+
+if (! $?Data_Mode) set Data_Mode = "random"
+
+
+set Signedness = ("UNSIGNED" "SIGNED")
+set Data_Order = ("LSB" "MSB")
+
+@ Total_Tests = 0
+@ Tests_Passed = 0
+
+
+@ Components = 1
+while ($Components != 4)
+
+@ Bytes = 1
+while ($Bytes < 3)
+
+@ Bits = $Bytes * 8
+while ($Bits)
+
+@ sign = 1
+while ($sign != 3)
+
+@ order = 1
+while ($order != 3)
+
+	set Filename = ${Data_Mode}-${Components}x${Width}x${Height}x${Bytes}.${Bits}_$Signedness[$sign]_$Data_Order[$order].IMG
+	set Root = $Filename:r
+
+	if ($Verbose) then
+		echo
+		echo '======================================================================'
+		echo
+		echo PDS_Test_Image \
+			-output $Filename \
+			-$Data_Mode \
+			-components $Components \
+			-width $Width -height $Height \
+			-bytes $Bytes \
+			-precision $Bits \
+			-$Signedness[$sign] \
+			-$Data_Order[$order]
+		PDS_Test_Image \
+			-output $Filename \
+			-$Data_Mode \
+			-components $Components \
+			-width $Width -height $Height \
+			-bytes $Bytes \
+			-precision $Bits \
+			-$Signedness[$sign] \
+			-$Data_Order[$order]
+		set exit_status = $status
+	else
+		PDS_Test_Image \
+			-output $Filename \
+			-$Data_Mode \
+			-components $Components \
+			-width $Width -height $Height \
+			-bytes $Bytes \
+			-precision $Bits \
+			-$Signedness[$sign] \
+			-$Data_Order[$order] >& /dev/null
+		set exit_status = $status
+	endif
+	if ($exit_status) then
+		echo "Unable to generate the PDS_Test_Image."
+		exit 0
+	endif
+
+
+	@ Total_Tests++
+	if ($Verbose) then
+		echo
+		echo '----------------------------------------------------------------------'
+		echo "Test $Total_Tests"
+		echo
+		check_PDS_to_JP2 -verbose -Keep_JP2 $Filename
+		if ($status) goto Next_Test
+	else
+		check_PDS_to_JP2 -Keep_JP2 $Filename
+		if ($status) goto Next_Test
+	endif
+	@ Tests_Passed++
+
+	@ Total_Tests++
+	if ($Verbose) then
+		echo
+		echo '----------------------------------------------------------------------'
+		echo "Test $Total_Tests"
+		echo
+		check_JP2_to_PDS -verbose $Root.JP2
+		if (! $status) @ Tests_Passed++
+	else
+		check_JP2_to_PDS $Root.JP2
+		if (! $status) @ Tests_Passed++
+	endif
+
+	Next_Test:
+	rm -f $Filename $Root.JP2 $Root.LBL
+	
+@ order++
+end
+
+@ sign++
+end
+
+if (($Bytes * 8) == $Bits) then
+	@ Bits /= 2
+	@ Bits += 2
+else
+	@ Bits = 0
+endif
+end
+
+@ Bytes++
+if ($Bytes == 3) @ Bytes++
+end
+
+@ Components++
+if ($Components == 2) @ Components++
+end
+
+echo "Checks: $Total_Tests"
+echo "Passed: $Tests_Passed"
+@ Total_Tests -= $Tests_Passed
+exit $Total_Tests

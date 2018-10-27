@@ -1,0 +1,221 @@
+PDS_JP2 Binary Distribution Installation
+
+
+This is the INSTALL file included with the binary distribution of the HiRISE
+PDS_JP2 software subsystem.
+
+Documentation:
+
+Documentation files in HTML format are included in the docs directory.
+The software Overview (docs/html/HiRISE/PDS_JP2/index.html) is the best
+place to start. The collection of documentation files is not location
+dependent; they can be moved wherever is appropriate for the local site.
+The documentation contains links to http://pirlwww.lpl.arizona.edu/
+where the documentation for dependent support libraries is located.
+
+Install procedures:
+
+The name of the distribution package filename will indicate on what kind
+of system the binaries were built. The format of the filename is
+PDS_JP2-<version>_<OS>_<arch>.tar.gz; where <version> is the version
+number of the PDS_JP2 distribution and <OS> and <arch> are the operating
+system and hardware architecture used to build the distribution. Unpack
+the distribution package file into a convenient location:
+
+tar xzf PDS_JP2-<version>_<OS>_<arch>.tar.gz
+
+This will produce a PDS_JP2-<version>_<OS>_<arch> directory
+($PDS_JP2_DIR for short). The distribution files can be used in place;
+no additional installation is required. However, it is usually
+convenient to install the distribution files in locations where
+application, library and documentation files are typically found, but
+these locations depend on the particular system and how it is being
+administered.
+
+An Installer script is included that provides assistance in copying the
+distribution files to appropriate installation locations. To use it:
+
+cd $PDS_JP2_DIR
+./Installer
+
+Prompts will be given for the library, application and documention
+installation pathnames. All pathnames will be confirmed writable by the
+user before the installation of the distribution files is completed.
+
+An Uninstaller script is also provided that can selectively remove the
+application, library and documentation files. These scripts must be run
+in their original $PDS_JP2_DIR directory location along with the other
+files of the distribution package.
+
+The following sections provide details about the installation
+requirements.
+
+Applications:
+
+These are command line user interface (CLUI) applications. The command
+line syntax usage and description of how they operate is located in the
+documentation. Just entering the application name to a shell will print
+a CLUI syntax summary; use the -Help option to get a complete syntax
+usage description.
+
+The binary executable files for the PDS_to_JP2 and JP2_to_PDS
+applications are in the bin directory. They must be found in the command
+PATH of the user's shell.
+
+One solution is to copy the application files to a system location where
+third party executables are usually found. This location is system
+dependent; the /usr/local/bin directory is a good posibility. You may
+need the assistance of a system administrator to do this.
+
+Another solution is to set the PATH environment variable to contain the
+pathname to the bin directory in this distribution. For example, users
+of the csh shell (or one of its variants) might add the following lines
+to their .login file in their home directory:
+
+if (-d $PDS_JP2_DIR/bin) then
+  if ($?PATH) then
+    setenv PATH $PDS_JP2_DIR/bin:$PATH
+  else
+    setenv PATH $PDS_JP2_DIR/bin
+endif
+
+For users of the Bourne shell (or one of its variants) the following
+lines added to their .profile file in the home directory are equivalent:
+
+if [ -d $PDS_JP2_DIR/bin ] ; then
+  if [ -z $PATH ] ; then
+    export PATH=$PDS_JP2_DIR/bin
+  else
+    export PATH=$PDS_JP2_DIR/bin:$PATH
+  fi
+fi
+
+After a login the command PATH will be set correctly.
+
+These applications depend on the included libraries and the system
+libraries which are dynamically linked at runtime.
+
+Libraries:
+
+Other than system libraries all third party libraries on which the
+PDS_JP2 applications depend are included in the lib directory. The
+applications are dynamically linked to these libraries so the runtime
+linker must know where to find them.
+
+As with the binary executable application files, one solution is to copy
+the libraries, and their linked names, to an appropriate location where
+third party libraries are usually found. This location is system
+dependent; the /usr/local/lib directory is a good posibility. You may
+need the assistance of a system administrator to do this. Alternatively,
+the LD_LIBRARY_PATH (DYLD_LIBRARY_PATH for Apple's OS X operating system)
+environment variable may be set to contain the pathname to the lib
+directory in this distribution. This is done in the same way as was done
+for the PATH environment variable. Don't forget to use DYLD_LIBRARY_PATH
+instead of LD_LIBRARY_PATH on an Apple OS X (Darwin) system.
+
+The system libraries should all be included as part of the operating
+system installation. Currently these operating systems and hardware
+architectures, with the listed system libraries, are supported:
+
+    Darwin (Apple OS X) 10.4 on powerpc and i386
+        /usr/lib/libSystem.B.dylib
+        /usr/lib/libgcc_s.1.dylib
+        /usr/lib/libmx.A.dylib (powerpc only)
+        /usr/lib/libstdc++.6.dylib
+	FreeBSD 5.4 on i386
+        libc.so.5
+        libm.so.3
+        libpthread.so.1
+        libstdc++.so.4
+    Linux (Suse) 10.3 on X86_64
+        /lib64/ld-linux-x86-64.so.2
+        libc.so.6
+        libcrypto.so.0.9.8
+        libcurl.so.3
+        libdl.so.2
+        libgcc_s.so.1
+        libidn.so.11
+		libjpeg.so.62
+        libm.so.6
+        libpng.so.3
+        libpthread.so.0
+        librt.so.1
+        libssl.so.0.9.8
+        libstdc++.so.6
+		libtiff.so.3
+        libz.so.1
+    Solaris (Sun) 9 on sparc v9 (64 bit)
+        /usr/platform/SUNW,Sun-Fire-V210/lib/sparcv9/libc_psr.so.1
+        /usr/platform/SUNW,Sun-Fire-V210/lib/sparcv9/libmd5_psr.so.1
+        libaio.so.1
+        libc.so.1
+        libdl.so.1
+        libgcc_s.so.1
+        libm.so.1
+        libmd5.so.1
+        libmp.so.2
+        libnsl.so.1
+        librt.so.1
+        libsocket.so.1
+        libstdc++.so.5
+        libthread.so.1
+        libz.so.1
+
+Source code:
+
+PDS_JP2 is free software distributed under the terms of the GNU General
+Public License as published by the Free Software Foundation. A source
+code distribution should be available from the same site where the
+binary distribution was obtained.
+
+Contact:
+
+Questions or comments about the PDS_JP2 software may be sent to
+PDS_JP2@pirl.lpl.arizona.edu which will be delivered to the developer
+contact.
+
+In general, when operational problems occur, an error message is
+provided describing the problem and identifying the software classes
+involved. Problem reports should include all this information. Comments
+and suggestions that could improve this application's usefulness are
+welcome.
+
+Credits:
+
+This software was developed at -
+
+    The Planetary Image Research Laboratory (PIRL)
+        http://pirl.lpl.arizona.edu/
+    HiRISE Operations Center (HiROC)
+		http://hirise.lpl.arizona.edu
+    Department of Planetary Sciences and Lunar and Planetary Lab (LPL)
+        http://www.lpl.arizona.edu/
+    The University of Arizona
+        http://arizona.edu/
+
+for the purposes of managing observation data sets produced by -
+
+    The High Resolution Imaging Science Experiment (HiRISE) instrument
+	of the NASA Mars Reconnaissance Orbiter (MRO) mission
+        http://marsprogram.jpl.nasa.gov/mro/
+
+Copyrights:
+
+The PDS_JP2 software is Copyright (C) 2006-2008 Arizona Board of Regents
+on behalf of the Planetary Image Research Laboratory, Lunar and
+Planetary Laboratory at the University of Arizona.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+The Kakadu Software libraries are included in the binary applications
+distribution for use with the PDS_JP2 applications only. They are
+Copyright (C) Dr. David Taubman, all rights reserved, and licensed by
+NewSouth Innovations Pty Limited ACN 000 263 025 ("NSi"). Please visit
+the Kakadu Software web site (http://www.kakadusoftware.com/) for
+further information.
+
+
+INSTALL-binary,v 1.7 2009/05/21 06:46:42 castalia Exp

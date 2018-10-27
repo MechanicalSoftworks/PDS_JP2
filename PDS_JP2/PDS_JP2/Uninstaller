@@ -1,0 +1,97 @@
+#!/bin/csh
+#
+#	Uninstall the PDS_JP2 binary distribution files.
+#
+#	CVS ID: Uninstaller,v 1.2 2009/03/04 03:21:03 castalia Exp
+
+echo
+echo -n "Do you want to remove the applications? "
+set response = $<
+if ("$response" =~ [Yy]*) then
+
+	#	Get the installation location of the applications.
+	Get_Bin_Dir:
+	echo "Where are the applications installed?"
+	echo -n "Pathname: "
+	set dir = $<
+	if (X$dir == X) then
+		#	Nothing specified.
+		echo "If you wish to exit the Install procedure enter Control-C."
+		goto Get_Bin_Dir
+	endif
+	if (! -d $dir) then
+		#	What the user specified is not an existing directory.
+		echo "The directory $dir"
+		echo "  does not exist."
+		goto Get_Bin_Dir
+	endif
+
+	foreach bin (bin/*)
+		rm $dir/$bin:t
+	end
+endif
+
+echo
+echo -n "Do you want to remove the libraries? "
+set response = $<
+if ("$response" =~ [Yy]*) then
+
+	#	Get the installation location of the libraries.
+	Get_Lib_Dir:
+	echo "Where are the libraries installed?"
+	echo -n "Pathname: "
+	set dir = $<
+	if (X$dir == X) then
+		#	Nothing specified.
+		echo "If you wish to exit the Uninstall procedure enter Control-C."
+		goto Get_Lib_Dir
+	endif
+	if (! -d $dir) then
+		#	What the user specified is not an existing directory.
+		echo "The directory $dir"
+		echo "  does not exist."
+		goto Get_Lib_Dir
+	endif
+
+	foreach lib (lib/*)
+		rm $dir/$lib:t
+	end
+endif
+
+echo
+echo -n "Do you want to remove the documentation files? "
+set response = $<
+if ("$response" =~ [Yy]*) then
+
+	#	Get the installation location of the documentation files.
+	Get_Docs_Dir:
+	echo "Where are the documentation files installed?"
+	echo -n "Pathname: "
+	set dir = $<
+	if (X$dir == X) then
+		#	Nothing specified.
+		echo "If you wish to exit the Install procedure enter Control-C."
+		goto Get_Docs_Dir
+	endif
+	if (! -d $dir) then
+		#	What the user specified is not an existing directory.
+		echo "The directory $dir"
+		echo "  does not exist."
+		goto Get_Docs_Dir
+	endif
+
+	if ("$dir:t" == PDS_JP2) then
+		set dir = $dir:h
+	endif
+	if (-d $dir/PDS_JP2) then
+		rm -rf $dir/PDS_JP2
+		if ($status) then
+			echo "Unable to remove the documentation files."
+			exit 1
+	endif
+endif
+
+echo
+echo "Done"
+exit 0
+

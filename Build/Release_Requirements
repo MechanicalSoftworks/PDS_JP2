@@ -1,0 +1,103 @@
+UA HiRISE HiROC Software
+Release process requirements for subsystems
+
+Bradford Castalia
+Software Librarian
+
+Version: 1.1
+Date:    2006/05/24 05:37:45
+
+
+The HiRISE software release process is driven by the HiRISE Build
+subsystem Makefile. HiRISE software subsystem developers can include the
+Build/Makefile.conf file in the subsystem Makefile to provide extensive
+support for all aspects of the software build process, including a
+release. The Build/Makefile.template provides an outline of how to use
+the HiRISE software build system.
+
+Regardless of the specifics of each subsystem Makefile, there are some
+requirements that must be met to achieve a successful HiRISE software
+release. Here is an overview of the release requirements that apply to
+all subsystem Makefiles:
+
+* The Makefile must be gmake compatible.
+
+* Provide a default target (typically named all) that builds the
+  subsystem in the subsystem's local directory hierarchy. To "build"
+  means to do whatever the subsystem deems necessary to generate a
+  functional subsystem. Local means that no external locations are to be
+  affected.
+
+* Provide a target named install that installs all components of the
+  subsystem required to provide its functionality to users. This includes
+  end users, developers and any other subsystems that use its
+  capabilities. The root of the installation location is required to be
+  relative to the $(INSTALL_DIR) variable which will be provided as an
+  environment variable (and, of course, is also automatically provided by
+  Makefile.conf):
+
+    Executables to $(INSTALL_DIR)/bin
+    Library files to $(INSTALL_DIR)/lib
+    Header include files to $(INSTALL_DIR)/include
+    Documentation -
+      Man files to $(INSTALL_DIR)/$(DOCS_MAN_DIR)
+      HTML files to $(INSTALL_DIR)/$(DOCS_HTML_DIR)
+      Other files to $(INSTALL_DIR)/$(DOCS_DIR)
+    Configuration files to $(INSTALL_DIR)/$(CONFIG_DIR)/$(SUBSYSTEM)
+   
+  Any dependencies on other HiRISE subsystems - e.g.include files - must
+  also be relative to $(INSTALL_DIR). N.B.: $(INSTALL_DIR) must be used
+  as given. The other variables used above are:
+
+  $(DOCS_DIR) is docs
+  $(DOCS_MAN_DIR) is $(DOCS_DIR)/man
+  $(DOCS_HTML_DIR) is $(DOCS_DIR)/html/HiRISE/$(SUBSYSTEM)
+  $(CONFIG_DIR) is Configuration
+  $(SUBSYSTEM) is the name of the subsystem
+    as listed in the Build/Makefile $(SUBSYSTEMS) list
+
+  All of these variables, except $(SUBSYSTEM), are provided by
+  Makefile.conf and are subject to change. The $(SUBSYSTEM) variable is
+  passed to each subsystem on the command line every time its Makefile is
+  invoked.
+
+* Provide a target named java that prepares any Java software for use.
+  Not all subsystem will contain Java software, of course, so
+  Makefile.conf provides a default java target that employs a pattern
+  rule to generate the executable .class files from any .java files.
+
+This is all that is required for the Build/Makefile release target.
+However, there are additional expectations:
+
+* The install target is expected to generate and install the subsystem
+  documentation. This does not include javadoc which is generated all at
+  once by the Build/Makefile without any help from subsystem Makefiles.
+
+* A target named bin_install is expected that will build and install only
+  executables (including scripts) and libraries. After the release has
+  been accomplished on the primary release platform this target is used
+  on other system architectures that need to be supported. All
+  architecture independent files are expected to have been installed
+  during the primary release into locations shared by all platforms.
+
+* A target named clean is expected that will prepare the subsystem for a
+  new build and install operation. This target is used after the primary
+  release and each bin_install to remove any files that would confuse a
+  subsequent bin_install. Architecture independent files are not expected
+  to be removed from the subsystem.
+
+Each subsystem is expected to contain a VERSION file, as described in the
+Build/Makefile.template file. Though this is currently not required, it,
+or something like it, is likely to be necessary to identify the subsystem
+version being built. This is part of the more general issue of version
+tracking.
+
+Note that this is only an overview of the HiRISE software release
+requirements. There are additional possible targets that Build/Makefile
+specifies. Some of these (and possibly new additions) will be required to
+support the preparation of a software distribution (e.g. docs_install and
+distclean). Some are expected to be used for more fine grained control of
+subsystem builds. The Build/Makefile.template describes these and other
+aspects of HiRISE software management.
+
+

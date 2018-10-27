@@ -1,0 +1,50 @@
+PDS_JP2 Release Notes
+
+
+* Release 3.17
+
+The PDS_to_JP2 application and the JP2_Encoder class that it uses have been
+enhanced with lossy bit rate and quality layers controls.
+
+
+* Release 3.16
+
+The JP2_to_PDS application and the Converters used to manage the PDS file
+label generation have been changed to correc the handling of the -resolution
+option.
+
+
+* Release 3.15.2
+
+The Kakadu libraries have been upgraded to version 6.1.
+
+A Kakadu_Build kit has been added to the distribution for use in
+building the Kakadu libraries in a manner consistent with PDS_JP2 naming
+expectations.
+
+
+* Release 3.15.1
+
+An exception while searching for a label converter will be reported.
+
+A data dependent bug in the idaeim PVL library was corrected.
+
+
+* Release 3.15
+
+Added a -No_output command line option to the applications that will
+completely initialize the worker classes and generate all report
+listings but produce no output file(s). This is particularly useful to
+check an operation before committing to file creation, or for a quick
+way to see the structure of the files involved.
+
+Fixed a bug that resulted in the wrong image size values in the PDS
+label when JP2_to_PDS was used to render the image at less than full
+resolution.
+
+Enhanced the Generic_PDS_Converter to correctly process HiRISE EDR
+files.
+
+
+
+CVS: 2.5 2010/09/28 02:23:42

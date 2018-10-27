@@ -1,0 +1,366 @@
+PDS_JP2 Source Code Distribution Installation
+
+
+This is the INSTALL file included with the source code distribution of
+the HiRISE PDS_JP2 software subsystem.
+
+Documentation:
+
+Documentation files in HTML format are included in the docs directory.
+The software Overview (docs/html/HiRISE/PDS_JP2/index.html) is the best
+place to start. The collection of documentation files is not location
+dependent; they can be moved wherever is appropriate for the local site.
+The documentation contains links to http://pirlwww.lpl.arizona.edu/
+where the documentation for dependent support libraries is located.
+
+Organization:
+
+The PDS_JP2 software is implemented as C++ classes and functions. This
+is organized into library source code in the libPDS_JP2 subdirectory and
+applications source code in the PDS_JP2 subdirectory. The applications
+subdirectory contains a tests subdirectory with testing and helper
+procedures. In addition, the distribution includes a Build directory
+that contains Makefile support and License information used by many
+other HiRISE software subsystems.
+
+System Requirements:
+
+The PDS_JP2 software is in production use at the HiRISE Operations
+Center (HiROC) on Apple OS X (Darwin) 10.4/5 powerpc and i386, Suse
+GNU/Linux 10.1 x86_64 and Solaris (SunOS) 5.9 SPARC/sun4u systems. It
+has also been successfully tested on a FreeBSD 5.4 i386 system. The
+source code should compile and run on any system providing a Unix or
+Unix compatible operating system. Please report (see the Contact
+information, below) success or problems building the software on systems
+not listed here.
+
+The software is 64-bit compatible. While 64-bit hardware is not
+required, long long integers are used where appropriate to accommodate
+the large file sizes (>2GB) that may be encountered. Of course, if
+large files are to be used the filesystem must be able to support
+them.
+
+The GNU make utility must be available to build the software. It can be
+used to build all of the external library software as well. A C++
+compiler must also be available; the GNU g++ compiler
+(http://gcc.gnu.org/) is recommended. If the documentation files are to
+be rebuilt the doxygen utility (http://www.stack.nl/~dimitri/doxygen/)
+must be available.
+
+External Libraries:
+
+idaeim -
+
+The idaeim libraries are required. They provide support for Parameter
+Value Language (PVL) management as used in PDS labels. The idaeim source
+code distribution is open source (GPL) and may be obtained via the PIRL
+software distribution site (http://pirl.lpl.arizona.edu/software/). The
+idaeim software must be installed in the lib and include subdirectories
+of the pathname specified by IDAEIM_ROOT (/opt/idaeim by default) in the
+Build/Makefile.conf file. This can be overridden by an environment
+variable or make runtime define.
+
+PIRL++ -
+
+The PIRL++ library is required. It provides various helper functions.
+The PIRL++ source code distribution is open source (GPL) and may be
+obtained via the PIRL software distribution site
+(http://pirl.lpl.arizona.edu/software/). The PIRL++ software must be
+installed in the lib and include subdirectories of the pathname
+specified by PIRL_ROOT (/opt/local/PIRL by default) in the
+Build/Makefile.conf file. This can be overridden by an environment
+variable or make runtime define.
+
+Kakadu -
+
+The Kakadu libraries are required. They provide the JP2 file content and
+JPEG2000 codestream management capabilities. The Kakadu software is
+proprietary and may be obtained via the Kakadu Software web site
+(http://www.kakadusoftware.com/). The Kakadu software must be installed
+in the lib and include subdirectories of the pathname specified by
+KAKADU_ROOT (/opt/Kakadu by default) in the Build/Makefile.conf file.
+This can be overridden by an environment variable or make runtime
+define.
+
+Note: The Makefiles distributed with the Kakadu software build dynamic
+link libraries that use an unconventional naming pattern: libkdu_vXXX.so
+(from coresys) and libkdu_aXXX.so (from managed), where XXX is the
+software distribution version. The PDS_JP2 Makefiles expect these to be
+named in the conventional manner: libkdu.so and libkdu_a.so,
+respectively. On OS X systems the "so" should be replaced with "dylib".
+In addition, for 64-bit builds on Solaris systems the library basename
+(before the extension) must have a "_64" suffix to distinguish them from
+32-bit libraries that do not have a basename suffix. Either change the
+names of the libraries built by the Kakadu Makefiles or, better yet,
+provide the required names using soft links.
+
+A Kakadu_Build kit is provided along with the PDS_JP2 distribution that
+can help simplify building the Kakadu libraries, including providing
+libraries with the conventional names expected by the PDS_JP2 Makefiles.
+This kit has been used at PIRL with the Kakadu v6.1 distribution.
+
+GDAL -
+
+The GDAL library is optional. It provides support in the
+PDS_Projection_Data class for generating the GeoTIFF (and experimental
+GML) data that may be included in JP2 files. The GDAL software is open
+source and may be obtained via the GDAL web site (http://www.gdal.org/).
+The GDAL software must be installed in the lib and include
+subdirectories of the pathname specified by GDAL_ROOT (/opt/pub by
+default) in the Build/Makefile.conf file. This can be overridden by an
+environment variable or make runtime define.
+
+Note: The GDAL library must be built with OGR enabled. When configuring
+for a 64-bit Solaris build set the CFLAGS, CXXFLAGS and LDFLAGS
+environment variables to "-mcpu=v9 -m64" (these may be different for
+specific SPARC architectures; check your compiler manual). For 64-bit
+builds on Solaris systems the library basename (before the extension)
+must have a "_64" suffix to distinguish it from a 32-bit library that
+does not have a basename suffix.
+
+uuid++ -
+
+The uuid++ library is optional. It provides support in the PDS_to_JP2
+application for specifying the data producer signature in plain text. If
+this support is not included the data producer signature can still be
+provided as UUID values. The uuid++ software is open source and may be
+obtained via the OSSP web site (http://www.ossp.org/pkg/lib/uuid/). The
+uuid++ software must be installed in the lib and include subdirectories
+of the pathname specified by OSSP_UUID_ROOT (/opt/pub by default) in the
+Build/Makefile.conf file. This can be overridden by an environment
+variable or make runtime define.
+
+Note: When configuring the library build be sure to include the
+--with-cxx option. When configuring for a 64-bit Solaris build set the
+CFLAGS, CXXFLAGS and LDFLAGS environment variables to "-mcpu=v9 -m64"
+(these may be different for specific SPARC architectures; check your
+compiler manual). For 64-bit builds on Solaris systems the library
+basename (before the extension) must have a "_64" suffix to distinguish
+it from a 32-bit library that does not have a basename suffix; modify
+the CXX_NAME (and LIB_NAME) in the Makefile that configure generates
+accordingly.
+
+Build Configuration:
+
+A Makefile is provided in each directory. The Makefiles use GNU make
+syntax. This utility may be called gmake on some systems, which is what
+it will be called here.
+
+To build just the library change to the libPDS_JP2 subdirectory and use
+the Makefile there. Otherwise use the Makefile in the top level PDS_JP2
+directory to build both the library and applications. The Makefile in
+the Build directory can also be used if SUBSYSTEMS is set to "PDS_JP2"
+either as an environment variable or as a make command line definition;
+it will invoke the top level PDS_JP2/Makefile.
+
+The Build/Makefile.conf file is included in each Makefile to provide the
+rules for building libraries and applications as well as configuring the
+environment in which this is done. The build control variables can be
+overridden by setting them as environment variables or defining them on
+the gmake command line. The same applies to the option configuration
+variables defined in the PDS_JP2 Makefiles.
+
+The top level PDS_JP2/Makefile contains several option configuration
+variables that should be examined and changed as appropriate. These
+option settings will be propagated to the library and applications
+Makefiles where they will override the corresponding settings there;
+the latter will need to be modified as appropriate if these Makefiles
+are to be used directly rather than indirectly through the top level
+Makefile.
+
+PRODUCER_SIGNATURE -
+
+Set its value to the producer signature used to generate a UUID in JP2
+files for the purpose of uniquely identifying the producer of the data
+that it contains. This value is typically the URL for the data producer
+- for example, the default is "http://hirise.lpl.arizona.edu/" (without
+the quotes) for HiRISE data products - but any string will do. Do not
+enclose the string in quotes even if it contains spaces. An empty value
+will result in a null (all zeros) UUID which indicates that the data
+producer is not identified.
+
+Note: The PRODUCER_SIGNATURE is only used if the OSSP uuid++ library is
+provided.
+
+PRODUCER_UUID -
+
+This is used if the OSSP uuid++ library is not provided, otherwise it is
+ignored. It's value must be 16 comma separted numbers each representing
+an 8-bit UUID value. These are typically represented as hexadecimal
+numbers - for example, the UUID values for
+http://hirise.lpl.arizona.edu/ are 0x2b, 0x0d, 0x7e, 0x97, 0xaa, 0x2e,
+0x31, 0x7d, 0x91, 0x33, 0xe5, 0x31, 0x61, 0xa2, 0xf7, 0xd0 - but decimal
+(or octal) numbers are acceptable. An empty value will result in a null
+(all zeros) UUID which indicates that the data producer is not
+identified.
+
+HiRISE -
+
+Set this value to "HiRISE" (without the quotes) if the
+HiRISE_PDS_Converter class is to be built. This is recommended.
+
+OSSP_UUID -
+
+Set this value to "OSSP_UUID" if the OSSP uuid++ library is provided.
+
+GDAL -
+
+Set this value to "GDAL" if the GDAL library is provided.
+
+INCREMENTAL_FLUSH_BYTES -
+
+The Kakadu JPEG2000 codestream encoder that is used when JP2 files are
+generated usually holds the entire codestream in memory until the entire
+image data source has been processed after which the codestream data is
+written to the JP2 file. The Kakadu codestream engine is capable of
+incrementally flushing the codesteam to the JP2 file during processing.
+However, due to the effect on the codestream structure and its
+relationship to codestream tile-part segment location markers this may
+result in a less than optimally organized data structure in the JP2 file
+or, under certain circumstances, may even cause the generation of
+correct file contents to fail (there will be an error message in this
+case). So the recommended value is 0 to disable incremental flushing. If
+incremental flushing is necessary due to limited system memory set the
+value to the maximum amount of memory, in bytes, to be used before the
+codestream will be flushed to the JP2 file; it should be as large as is
+reasonably possible.
+
+Note: The INCREMENTAL_FLUSH_BYTES only affects JP2 file generation
+(in the JP2_Encoder class). It has no affect on codestream decoding
+which is always done incrementally when generating the decompressed
+image data file.
+
+Build Operations:
+
+The software may be compiled with any suitable C++ compiler. The g++
+(gcc) version 3.x or 4.x compiler is known to compile all required
+source code, including external libraries, correctly. The selection of
+the compiler is determined by the value of the COMPILER variable which
+is set to g++ by default in the Build/Makefile.conf file. This file
+also determines the names of other utilities used by gmake.
+
+After the external libraries have been installed and the top level
+PDS_JP2/Makefile configured, run gmake in the top level PDS_JP2
+directory. Alternatively, gmake may be run in the Build directory:
+
+gmake SUBSYSTEMS=PDS_JP2
+
+Both static and dynamic libraries will be built and then the
+applications will be built. To build just the libraries specify the
+libraries target on the gmake command line or use the Makefile in the
+libPDS_JP2 subdirectory. To build just the applications specify the
+applications target on the gmake command line; in this case the
+libraries will automatically be built if this has not already been done.
+To rebuild the documentation files specify the docs target on the gmake
+command line.
+
+The software and its documentation may be installed at the desired
+system location by specifying the install target on the gmake command
+line. The software install root directory is specified the INSTALL_DIR
+variable and the documentation install root directory is specified by
+the DOCS_INSTALL_DIR variable. Under the INSTALL_DIR pathname the
+interface definition header files will copied to the include
+subdirectory, the library files will be copied to the lib subdirectory
+and the application executable files will be copied to the bin
+subdirectory. Under the DOCS_INSTALL_DIR pathname the documentation
+files will be copied to the docs/html/HiRISE/PDS_JP2 subdirectory. The
+default INSTALL_DIR set in the Build/Makefile.conf is the parent of the
+top level PDS_JP2 directory and the default DOCS_INSTALL_DIR is the
+value of INSTALL_DIR. To specify an alternative installation location -
+/opt/pub in this example - when using the top level PDS_JP2/Makefile,
+this command may be used:
+
+gmake INSTALL_DIR=/opt/pub install
+
+The headers_install, libraries_install, applications_install or
+docs_install gmake targets may be specified to install just the
+corresponding files.
+
+To remove all files generated during the software build process specify
+the clean gmake target. To also remove the documentation files specify
+the dist_clean target.
+
+Tests:
+
+The PDS_JP2/PDS_JP2/tests directory contains various testing procedures.
+The Makefile there will build the test procedures that must be compiled.
+
+The PDS_Test_Image procedure is useful for generating PDS image data
+files with specific characteristics that can then be used to test the
+PDS_to_JP2 application and the resulting files used to test the
+JP2_to_PDS application.
+
+The check_PDS_to_JP2 procedure will run PDS_to_JP2 on a source PDS file
+that is used to generate a JP2 file. Then kdu_expand (included with the
+Kakadu software) is used to decompress this file to a raw image data
+file. The source PDS file is split into label and image data files and
+the image data file is compared with the decompressed raw image data
+file. The check_JP2_to_PDS procedure will run the JP2_to_PDS application
+on a source JP2 file that is used to generate a PDS file. The PDS file
+is split into label and image data files. The image data file is
+compared with the original image data file split from the original PDS
+file used to generate the JP2 file. The test_PDS_to_JP2 procedure will
+use PDS_Test_Image to generate a sequence of 64 test files with a range
+of data characteristics each of which is used with check_PDS_to_JP2 and
+its results used with check_JP2_to_PDS.
+
+For detailed examination of JP2 file contents the JP2_Info utility of the
+PIRL Java Packages
+(http://pirlwww.lpl.arizona.edu/software/PIRL_Java_Packages.shtml) may
+be used. After obtaining the PIRL.jar file from the PIRL software
+distribution site run:
+
+java -jar PIRL.jar PIRL.Image_Tools.JP2_Info -gui file.JP2
+
+Applications:
+
+PDS_to_JP2 and JP2_to_PDS are command line user interface (CLUI)
+applications. The command line syntax usage and description of how they
+operate is located in the documentation. Just entering the application
+name to a shell will print a CLUI syntax summary; use the -Help option
+to get a complete syntax usage description.
+
+Contact:
+
+Questions or comments about the PDS_JP2 software may be sent to
+PDS_JP2@pirl.lpl.arizona.edu which will be delivered to the developer
+contact.
+
+In general, when operational problems occur, an error message is
+provided describing the problem and identifying the software classes
+involved. Problem reports should include all this information. Comments
+and suggestions that could improve this application's usefulness are
+welcome.
+
+Credits:
+
+This software was developed at -
+
+    The Planetary Image Research Laboratory (PIRL)
+        http://pirl.lpl.arizona.edu/
+    HiRISE Operations Center (HiROC)
+		http://hirise.lpl.arizona.edu/
+    Department of Planetary Sciences and Lunar and Planetary Lab (LPL)
+        http://www.lpl.arizona.edu/
+    The University of Arizona
+        http://arizona.edu/
+
+for the purposes of managing observation data sets produced by -
+
+    The High Resolution Imaging Science Experiment (HiRISE) instrument
+	of the NASA Mars Reconnaissance Orbiter (MRO) mission
+        http://marsprogram.jpl.nasa.gov/mro/
+
+Copyright:
+
+The PDS_JP2 software is Copyright (C) 2006-2007 Arizona Board of Regents
+on behalf of the Planetary Image Research Laboratory, Lunar and
+Planetary Laboratory at the University of Arizona.
+
+This software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+
+$Id: INSTALL-source,v 2.3 2009/02/23 23:13:39 castalia Exp $

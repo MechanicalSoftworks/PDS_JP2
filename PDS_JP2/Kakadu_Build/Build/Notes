@@ -1,0 +1,29 @@
+Kakadu Build Notes
+
+* 6.4.3
+
+Revised to use a common Build/Makefile.conf that configures common settings for
+all Makefiles.
+
+Enhanced to provide FAT_MAC builds on Darwin OS.
+
+* 6.4
+
+The contrib subdirectory is no longer in use.
+
+* 6.3
+
+Added a Make-SunOS-i86pc Build configuration.
+
+* 6.2
+
+There have been significant changes to the source code structure. As a result
+the v6.1 Build system is not compatibile with the 6.2 Kakadu distribution.
+
+A Linux build may produce numerous warnings about unused return values from
+the fread and fgets system calls. While the source code changes to prevent
+these warnings are trivial, they are not necessary: the warnings can be
+safely ignored.
+
+
+Notes,v 1.5 2011/07/07 08:28:01 castalia Exp

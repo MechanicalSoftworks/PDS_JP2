@@ -1,0 +1,39 @@
+/*	UA::HiRISE
+
+CVS ID: Overview.doxygen,v 1.1 2005/03/31 06:45:54 castalia Exp
+*/
+
+/*!	\mainpage
+
+This software was developed at the Planetary Image Research Laboratory
+(<a href="http://pirl.lpl.arizona.edu/">%PIRL</a>)
+of the
+<a href="http://arizona.edu/">University of Arizona</a>
+<a href="http://www.lpl.arizona.edu/">Department of Planetary Sciences</a>
+for the purpose of managing observation data
+sets produced by the High Resolution Imaging Science Experiment
+(<a href="http://hirise.lpl.arizona.edu/">%HiRISE</a>)
+instrument, part of the Mars Reconnaissance Orbiter
+(<a href="http://marsprogram.jpl.nasa.gov/mro/">MRO</a>)
+mission.
+
+
+<hr>
+Copyright (C) 2005  Arizona Board of Regents on behalf of the Planetary
+Image Research Laboratory, Lunar and Planetary Laboratory at the
+University of Arizona.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+with this program; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111-1307  USA.
+*/

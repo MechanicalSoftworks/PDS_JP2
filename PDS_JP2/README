@@ -1,0 +1,59 @@
+UA::HiRISE::PDS_JP2
+
+
+The PDS_JP2 software package contains applications and a library
+of reusable C++ classes for the conversion between PDS uncompressed
+image data files with an attached metadata label and a compressed JP2
+image data file with a detached PDS metadata label file.
+
+Both source code an binary distributions are provided. The
+INSTALL-source file describes the installation process for the source
+distribution. The INSTALL-binary file describes the installation process
+for the binary distribution, and Installer and Uninstaller scripts are
+also included. In addition, the binary distribution includes all the
+third party libraries required to run the applications. Both
+distributions include a complete set of documentation in the form of
+Doxygen generated HTML files.
+
+Visit the http://pirl.lpl.arizona.edu/software/PDS_JP2 web site for
+on-line information.
+
+This software was developed at the Planetary Image Research Laboratory
+(PIRL; http://pirl.lpl.arizona.edu/) HiRISE Operations Center (HiROC) of
+the University of Arizona (http://arizona.edu/) Department of Planetary
+Sciences (http://www.lpl.arizona.edu/) for the purpose of managing
+observation data sets produced by the High Resolution Imaging Science
+Experiment (HiRISE; http://hirise.lpl.arizona.edu/) instrument of the
+NASA Mars Reconnaissance Orbiter (MRO; http://mars.jpl.nasa.gov/mro/)
+mission.
+
+
+Copyright (C) 2006-2008  Arizona Board of Regents on behalf of the
+Planetary Image Research Laboratory, Lunar and Planetary Laboratory at
+the University of Arizona.
+
+This software is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License
+with this software; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111-1307  USA.
+
+
+The Kakadu Software libraries are included in the binary applications
+distribution for use with the PDS_JP2 applications only. They are
+Copyright (C) Dr. David Taubman, all rights reserved, and licensed by
+NewSouth Innovations Pty Limited ACN 000 263 025 ("NSi"). Please visit
+the <a href="http://www.kakadusoftware.com/" target="_top">Kakadu
+Software</a> web site for further information.
+
+
+README,v 2.1 2008/02/26 02:02:35 castalia Exp
+

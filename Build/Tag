@@ -1,0 +1,207 @@
+#!/bin/csh
+#
+#	Tag
+#
+#	Use:
+#
+#		Tag [-Verbose] [-Directory <directory>] -Tag <tag> <subsystem> [...]
+#
+#	Description:
+#
+#	All files from the CVS respository in each subsystem hierarchy have
+#	their checked-in revision tagged. The tag format is:
+#
+#	<subsystem>-<version>-<tag>
+#
+#	where <subsystem> is the name of the subsystem, <version> is the
+#	version number obtained from the subsystem VERSION file with all '.'
+#	characters replaced with '_' characters and <tag> is the user
+#	specified -tag. If a -directory is not specified the parent of the
+#	current directory will be used as the root directory for location
+#	subsystem subdirectories.
+#
+#	Each specified subsystem must be represented by a subdirectory of
+#	the root directory and each subsystem directory must contain a CVS
+#	subdirectory - i.e. it must be a CVS checkout working directory -
+#	and have a file named VERSION that contains the subsystem version
+#	number identified as the first word on a line beginning with a digit
+#	character. All subsystems that do not satisfy these three criteria
+#	are listed under the criteria that they are missing; the tagging
+#	procedure will abort unless all subsystems meet all criteria. If
+#	there are errors when tagging any subsystem the procedure will abort
+#	without attempting to tag any further subsystems.
+#
+#	If -verbose is specified all files tagged will be listed, otherwise
+#	only the total number of files tagged in each subsystem will be
+#	listed.
+#
+#	A file can not be given the same tag twice. Thus Running Tag again
+#	for a subsystem without a change to the VERSION number or -tag name
+#	will only affect files that have been added and committed to the CVS
+#	repository since the previous Tag.
+#
+#	-Help
+#
+#	List the brief usage description.
+#
+#	Author:
+#
+#		Bradford Castalia, UA/PIRL/HiROC
+#
+#	CVS ID: Tag,v 2.3 2008/03/11 02:46:39 castalia Exp
+
+
+set procedure = `basename $0`
+
+set Subsystems = ()
+
+while ($#argv)
+	switch ($argv[1])
+		case -[Dd]*:
+			shift
+			if ($?Directory) then
+				echo "${procedure}: Multiple directory pathnames specified -"
+				echo "  $Directory"
+				echo "  $argv[1]"
+				goto Usage
+			endif
+			if (! $#argv) then
+				echo "${procedure}: Missing directory pathname."
+				goto Usage
+			endif
+			set Directory = $argv[1]
+			breaksw
+		case -[Tt]*:
+			shift
+			if ($?Tag) then
+				echo "${procedure}: Multiple tag names specified -"
+				echo "  $Tag"
+				echo "  $argv[1]"
+				goto Usage
+			endif
+			if (! $#argv) then
+				echo "${procedure}: Missing tag name."
+				goto Usage
+			endif
+			set Tag = $argv[1]
+			breaksw
+		case -[Vv]*:
+			set Verbose = 1
+			breaksw
+		case -[Hh]*:
+			Usage:
+			echo "Usage: $0 [-Verbose] [-Directory <directory>] -Tag <tag> <subsystem> [...]"
+			echo "  Default directory: .."
+			echo '  Tag format: <subsystem>-<VERSION>-<tag>'
+			exit 1
+			breaksw
+		case -*:
+			echo "${procedure}: Unrecognized $argv[1] option."
+			goto Usage
+			breaksw
+		default:
+			set Subsystems = ($Subsystems $argv[1])
+			breaksw
+	endsw
+	shift
+end
+
+if (! $?Tag) then
+	echo "${procedure}: No tag specified."
+	goto Usage
+endif
+
+if (! $#Subsystems) then
+	echo "${procedure}: No subsystems specified."
+	goto Usage
+endif
+
+if (! $?Directory) set Directory = ".."
+if (! -d $Directory) then
+	echo "${procedure}: No such directory: $Directory"
+	exit 1
+endif
+
+
+#	Check for completness.
+
+set Missing_subsystem = ()
+set Missing_CVS = ()
+set Missing_VERSION = ()
+foreach subsystem ($Subsystems)
+	if (! -d $Directory/$subsystem) then
+		set Missing_subsystem = ($Missing_subsystem $subsystem)
+	else
+		if (! -d $Directory/$subsystem/CVS) \
+			set Missing_CVS = ($Missing_CVS $subsystem)
+		if (! -f $Directory/$subsystem/VERSION) then
+			set Missing_VERSION = ($Missing_VERSION $subsystem)
+		else
+			set version = (`grep '^[0-9]' $Directory/$subsystem/VERSION`)
+			set version = $version[1]
+			if ("$version" == "") \
+				set Missing_VERSION = ($Missing_VERSION $subsystem)
+		endif
+	endif
+end
+if ($#Missing_subsystem) then
+	set Incomplete
+	echo "${procedure}: Missing subsystems -"
+	foreach subsystem ($Missing_subsystem)
+		echo "  $subsystem"
+	end
+	echo
+endif
+if ($#Missing_CVS) then
+	set Incomplete
+	echo "${procedure}: Missing subsystem CVS subdirectories -"
+	foreach subsystem ($Missing_CVS)
+		echo "  $subsystem"
+	end
+	echo
+endif
+if ($#Missing_VERSION) then
+	set Incomplete
+	echo "${procedure}: Missing subsystem VERSION values -"
+	foreach subsystem ($Missing_VERSION)
+		echo "  $subsystem"
+	end
+	echo
+endif
+if ($?Incomplete) then
+	echo "$procedure aborted."
+	exit 2
+endif
+
+
+#	Tag each subystem.
+
+set CWD = $PWD
+foreach subsystem ($Subsystems)
+	cd $Directory/$subsystem
+	set version = (`grep '^[0-9]' $Directory/$subsystem/VERSION`)
+	set version = `echo $version[1] | tr . _`
+	set version = $subsystem-$version-$Tag
+	echo $version
+	if ($?Verbose) then
+		cvs -q tag $version
+		set exit_status = $status
+		echo
+	else
+		set tagged = `cvs -q tag $version`
+		set exit_status = $status
+	endif
+	if ($exit_status) then
+		echo '\!\!\!' "There was a problem tagging the $subsystem subsystem."
+		echo "    cvs exit status $exit_status"
+		cd $CWD
+		exit $exit_status
+	endif
+	if (! $?Verbose) then
+		@ count = $#tagged / 2
+		echo "  $count files tagged"
+	endif
+	cd $CWD
+end
+
+exit 0

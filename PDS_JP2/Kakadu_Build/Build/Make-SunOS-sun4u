@@ -1,0 +1,74 @@
+#	Kakadu Software Build Configuration
+#
+#	Host options for SunOS sun4u systems.
+#
+#	PIRL CVS ID: Make-SunOS-sun4u,v 1.9 2012/08/23 23:38:41 castalia Exp
+
+#	Installation base directory.
+INSTALL_DIR		?=	
+#	For finer control of the various installation directories
+#	set here, on the command line or as environment variables:
+#BIN_DIR		?=	$(INSTALL_DIR)/bin
+#LIB_DIR		?=	$(INSTALL_DIR)/lib
+#INCLUDE_DIR	?=	$(INSTALL_DIR)/include
+#DOCS_DIR		?=	$(INSTALL_DIR)/docs
+
+#	Select either or both library build selections.
+STATIC			:=	STATIC
+SHARED			:=	SHARED
+
+
+#	C++ compiler.
+#		Comment out to use the system's default compiler.
+CC				:=	g++
+
+#	Additional include file paths.
+#		The location of the Java JNI (jni.h, etc.) header files.
+JAVA_HOME		?=	/usr/java
+HOST_INCLUDES	:=	-I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/solaris
+
+#	Uncomment for 64-bit library names that should have a special suffix.
+LIBRARY_NAME_SUFFIX	?=	_64
+
+#	Whether to link programs using SHARED or STATIC libraries.
+#		It's generally best to use the system default unless static is required.
+#LIBRARY_SELECTION	?=	STATIC
+
+#SHARED_LIBRARY_EXTENSION	?=	so
+#SHARED_LIBRARY_OPTION		:=	-shared
+
+HOST_CXXFLAGS 	+=	-O2 -DNDEBUG -Wall -Wno-uninitialized
+
+#	Large file support.
+HOST_CXXFLAGS	+=	-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+#	CPU optimization and 64-bit compilation.
+HOST_CXXFLAGS	+=	-mcpu=v9
+HOST_CXXFLAGS	+=	-m64
+#HOST_CXXFLAGS	+=	-mcpu=ultrasparc
+#HOST_CXXFLAGS	+=	-mcpu=ultrasparc3
+#	VIS SIMD speedups.
+#HOST_CXXFLAGS	+= -DKDU_SPARCVIS_GCC   
+
+#	Uncomment to compile without multi-threading.
+#HOST_CXXFLAGS	+=	-DKDU_NO_THREADS
+#	Uncomment if the pthreads support does not provide the schedXXX functions
+#	referenced in the kdu_elemenatry.h file.
+#HOST_CXXFLAGS	+= -DKDU_NO_SCHED_SUPPORT
+
+#	See "Internationalization" in "Compilation_Instructions.txt".
+#HOST_CXXFLAGS	+=	-DKDU_CUSTOM_TEXT
+
+HOST_LDFLAGS	+=	-mcpu=v9
+HOST_LDFLAGS	+=	-m64
+
+#	Uncomment to use the libtiff library instead of the built-in TIFF support.
+#HOST_CXXFLAGS 	+=	-DKDU_INCLUDE_TIFF
+#	Location of the tiffio.h include file.
+#HOST_INCLUDES	+=	-I/opt/pub/include
+#	Location of the libtiff library.
+#HOST_LIBRARIES	+=	-L/opt/pub/lib -ltiff
+#	SunOS networking libraries.
+HOST_LIBRARIES	+=	-lsocket -lnsl
+#	SunOS real-time library for high precision timing.
+HOST_LIBRARIES	+=	-lrt

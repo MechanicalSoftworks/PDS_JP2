@@ -1,0 +1,222 @@
+#!/bin/csh
+#
+#	PDS_to_JP2 checker.
+#
+#	PDS_to_JP2 is provided with a source PDS file that is used to
+#	generate a JP2 file. Then kdu_expand is used to decompress this file
+#	to a raw image data file. The source PDS file is split into label and
+#	image data files and the image data file is compared with the
+#	decompressed raw image data file.
+#
+#	The source filename must be specified on the command line.
+#
+#	The size of the label in the source file must be specified by the
+#	LABEL_RECORDS parameter. The number of image bands must be specified
+#	by the IMAGE/BANDS parameter. The pixel byte order must be specified
+#	by the IMAGE/SAMPLE_TYPE parameter value beginning with "LSB" or "MSB".
+#
+#	For detailed listings of the test processing use the -Verbose option.
+#
+#	Normally all files generated - JP2, LBL, RAW[L] (uncompressed image band
+#	files) and files split from the source - are deleted on completion of
+#	the check procedure. The -Keep command line argument causes these
+#	files to be kept. The -Keep_JP2 form only keeps the JP2 and its
+#	associated PDS label (LBL) files.
+#
+#	All other command line arguments are passed to PDS_to_JP2.
+#
+#	If the check is successful the final exit status from the cmp utility
+#	will be zero. Otherwise there was some problem either during
+#	PDS_to_JP2 or kdu_expand operation, or the final file compare did not
+#	match.
+#
+#	Author:	Bradford Castalia, UA/PIRL
+#
+#	CVS ID: check_PDS_to_JP2,v 1.9 2007/09/02 00:47:49 castalia Exp
+
+if ($#argv == 0) then
+	Usage:
+	echo "Usage: $0 [-Help] [-Verbose] [-Keep[_JP2]] [<PDS_to_JP2 options>] <pathname>"
+	exit 1
+endif
+
+set Verbose = 0
+set PDS_to_JP2_args = ()
+@ Remove_Files = 3
+
+while ($#argv)
+	switch ($argv[1])
+		case -[Kk]*:
+			switch ($argv[1])
+				case *[Jj]*:
+					@ Remove_Files = 1
+					breaksw
+				default:
+					@ Remove_Files = 0
+					breaksw
+			endsw
+			breaksw
+		case -[Hh]*:
+			PDS_to_JP2
+			echo
+			goto Usage
+			breaksw
+		case -[FfPpTtRrCcUuSsLlMmIi]*:
+			set PDS_to_JP2_args = ($PDS_to_JP2_args $argv[1])
+			if ("$argv[1]" =~ -[PpTtRrCcIi]*) then
+				set arg = $argv[1]
+				shift argv
+				if ($#argv == 0) then
+					echo "Missing value for PDS_to_JP2 $arg option."
+					PDS_to_JP2
+					exit 1
+				endif
+				set PDS_to_JP2_args = ($PDS_to_JP2_args $argv[1])
+			endif
+			breaksw
+		case -[Vv]*:
+			set Verbose = 1
+			breaksw
+		case -*:
+			echo "Unrecognized argument: $argv[1]"
+			exit 1
+			breaksw
+		default:
+			if ($?PDS_File) then
+				echo "Unrecognized argument: $argv[1]"
+				exit 1
+			endif
+			set PDS_File = $argv[1]
+			breaksw
+	endsw
+	shift argv
+end
+
+
+if (! $?PDS_File) then
+	echo "No source PDS file specified."
+	goto Usage
+endif
+if (! -f $PDS_File) then
+	echo "No such file: $PDS_File"
+	exit 1
+endif
+
+set Basename = $PDS_File:r
+set JP2_File = $Basename.JP2
+
+
+#	PDS file characteristics.
+
+set Sample_Type = (`PPVL_report -q IMAGE/SAMPLE_TYPE $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+if ($Verbose) echo "IMAGE/SAMPLE_TYPE: $Sample_Type"
+switch ($Sample_Type)
+	case *LSB*:
+		set RAW = "rawl"
+		breaksw
+	case *MSB*:
+	default:
+		set RAW = "raw"
+		breaksw
+endsw
+set RAW_File = $Basename.$RAW
+
+set Bands = (`PPVL_report -q IMAGE/BANDS $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+if ($Verbose) echo "IMAGE/BANDS: $Bands"
+
+set Label_Records = (`PPVL_report -q LABEL_RECORDS $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+set Record_Bytes =  (`PPVL_report -q RECORD_BYTES $PDS_File | tr -s ' \;\r' '=' | cut -d= -f2`)
+if ("$Record_Bytes" != "") then
+	@ Label_Size = $Label_Records * $Record_Bytes
+else
+	@ Label_Size = $Label_Records
+endif
+if ($Verbose) echo "Label size: $Label_Size"
+
+
+#	PDS_to_JP2.
+
+if ($Verbose) then
+	echo
+	echo PDS_to_JP2 -f $PDS_to_JP2_args $PDS_File
+	PDS_to_JP2 -f $PDS_to_JP2_args $PDS_File
+	set exit_status = $status
+	echo "Exit status = $exit_status"
+else
+	PDS_to_JP2 -f $PDS_to_JP2_args $PDS_File >& /dev/null
+	set exit_status = $status
+endif
+if ($exit_status != 0) goto Cleanup
+
+
+#	kdu_expand.
+
+if ($Bands == 1) then
+	if ($Verbose) then
+		echo
+		echo kdu_expand -i $JP2_File -o $RAW_File
+		kdu_expand -i $JP2_File -o $RAW_File
+		set exit_status = $status
+		echo "Exit status = $exit_status"
+	else
+		kdu_expand -i $JP2_File -o $RAW_File >& /dev/null
+		set exit_status = $status
+	endif
+else
+	if ($Verbose) then
+		echo
+		echo kdu_expand -i $JP2_File -o $Basename-0.$RAW,$Basename-1.$RAW,$Basename-2.$RAW
+		kdu_expand -i $JP2_File -o $Basename-0.$RAW,$Basename-1.$RAW,$Basename-2.$RAW
+		set exit_status = $status
+		echo "Exit status = $exit_status"
+		echo
+		echo cat "$Basename-0.$RAW $Basename-1.$RAW $Basename-2.$RAW > $RAW_File"
+		cat $Basename-0.$RAW $Basename-1.$RAW $Basename-2.$RAW >! $RAW_File
+	else
+		kdu_expand -i $JP2_File -o $Basename-0.$RAW,$Basename-1.$RAW,$Basename-2.$RAW >& /dev/null
+		set exit_status = $status
+		cat $Basename-0.$RAW $Basename-1.$RAW $Basename-2.$RAW >! $RAW_File
+	endif
+endif
+if ($exit_status != 0)  goto Cleanup
+
+
+#	Split the source PDS file into label and image data segments.
+if ($Verbose) then
+	echo
+	echo split_bytes $Label_Size $PDS_File
+	split_bytes $Label_Size $PDS_File
+else
+	split_bytes $Label_Size $PDS_File >& /dev/null
+endif
+
+
+#	Compare the image data segments.
+
+if ($Verbose) then
+	echo
+	echo cmp $RAW_File $PDS_File,$Label_Size-*
+	cmp $RAW_File $PDS_File,$Label_Size-*
+	set exit_status = $status
+	echo "Exit status = $exit_status"
+else
+	cmp -s $RAW_File $PDS_File,$Label_Size-*
+	set exit_status = $status
+endif
+
+
+Cleanup:
+if ($Remove_Files) then
+	rm -f $PDS_File,*  $RAW_File $Basename-*.$RAW >& /dev/null
+	if ($Remove_Files != 1) rm -f $JP2_File $Basename.LBL >& /dev/null
+endif
+
+
+if ($exit_status == 0) then
+	set result = "PASS"
+else
+	set result = "FAIL"
+endif
+echo "${result}: PDS_to_JP2 check on $PDS_File"
+
+exit $exit_status
