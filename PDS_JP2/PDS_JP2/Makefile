@@ -123,14 +123,26 @@ else
 								$(IDAEIM_ROOT)/lib/libUtility$(64)
 endif
 
-#	Kakadu JPEG2000 library:
+#	Kakadu JPEG2000 library.
 KAKADU_INCLUDE			=	-I$(KAKADU_ROOT)/include
+ifneq ($(OS),WIN)
 KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib \
-								-lkdu_a$(64) \
-								-lkdu$(64) \
+								-lkdu_a63$(64) \
+								-lkdu63$(64) \
 								-lpthread
-KAKADU_DIST				=	$(KAKADU_ROOT)/lib/libkdu_a$(64) \
-							$(KAKADU_ROOT)/lib/libkdu$(64)
+else
+
+# ifndef 64
+# KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib/Win32 \
+								# kdu_a63R.lib \
+								# kdu_v63R.lib
+# else
+KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib/x64 \
+								kdu_a63R.lib \
+								kdu_v63R.lib
+# endif
+
+endif
 
 #	PIRL C++ class library.
 PIRL_INCLUDE			=	-I$(PIRL_ROOT)/include
@@ -144,12 +156,16 @@ SUBSYSTEM_LIB_NAME		=	lib$(SUBSYSTEM)$(64).$(SHARED_LIBRARY_EXT)
 SUBSYSTEM_LIB			=	$(SUBSYSTEM_LIB_DIR)/$(SUBSYSTEM_LIB_NAME)
 
 ifeq ($(OS),WIN)
-LIBRARIES				+= 	$(SUBSYSTEM_LIB) \
-							$(PVL_DIST) \
-							$(KAKADU_DIST) \
-							$($(GDAL)_DIST) \
-							$(PIRL_DIST) \
-							$($(OSSP_UUID)_DIST)
+LIBRARIES				+=	ADVAPI32.LIB \
+							WS2_32.LIB \
+							USERENV.LIB
+							
+LIBRARIES				+= 	$(SUBSYSTEM_LIB_DIR)/lib$(SUBSYSTEM)$(64).lib \
+							$(PVL_LIBRARY) \
+							$(KAKADU_LIBRARY) \
+							$($(GDAL)_LIBRARY) \
+							$(PIRL_LIBRARY) \
+							$($(OSSP_UUID)_LIBRARY)
 else
 LIBRARIES				+= 	-L$(SUBSYSTEM_LIB_DIR) \
 								-l$(SUBSYSTEM)$(64) \

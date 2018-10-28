@@ -125,8 +125,8 @@ else
 								# kdu_v63R.lib
 # else
 KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib/x64 \
-								-lkdu_a63R.lib \
-								-lkdu_v63R.lib
+								kdu_a63R.lib \
+								kdu_v63R.lib
 # endif
 
 endif
@@ -144,6 +144,10 @@ LIBRARIES				+= 	$(PVL_LIBRARY) \
 
 #	Include files:
 ifeq ($(OS),WIN)
+LIBRARIES				+=	ADVAPI32.LIB \
+							WS2_32.LIB \
+							USERENV.LIB
+
 INCLUDES 				=	$(PVL_INCLUDE) \
 							$(KAKADU_INCLUDE) \
 							$(PIRL_INCLUDE) \

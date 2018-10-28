@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include	"Dimensions.hh"
 using UA::HiRISE::Size_2D;
-using UA::HiRISE::Rectangle;
+//using UA::HiRISE::Rectangle;
 
 #include	"PDS_Converters.hh"
 using UA::HiRISE::converter_for;
@@ -1034,7 +1034,7 @@ if (file_exists (PDS_pathname))
 	}
 JP2_decoder.destination (PDS_pathname);
 
-Rectangle
+UA::HiRISE::Rectangle
 	region (JP2_decoder.image_region ());
 if (image_area[2])
 	{

@@ -41,6 +41,10 @@ using namespace PIRL;
 #include	<cerrno>
 using namespace std;
 
+#ifdef _WIN32
+#	include <Windows.h>
+#endif
+
 /*==============================================================================
 	Parameters
 */
@@ -85,6 +89,31 @@ const char
 
 const int
 	VERS_AND_FLAG_BYTES					= 4;
+	
+#ifdef _WIN32
+/*==============================================================================
+	realpath
+*/
+/**	Implemented for Windows compatibility.
+	See http://man7.org/linux/man-pages/man3/realpath.3.html for details.
+*/
+char*
+realpath
+	(
+	const char*	path,
+	char*		resolved_path
+	)
+{
+if (resolved_path == NULL)
+	{
+	resolved_path = (char*)malloc(MAX_PATH * sizeof(char));
+	}
+	
+GetFullPathNameA(path, MAX_PATH, resolved_path, NULL);
+
+return resolved_path;
+}
+#endif
 
 /*==============================================================================
 	Usage
