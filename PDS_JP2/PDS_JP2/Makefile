@@ -105,13 +105,23 @@ GDAL_DIST				=	$(GDAL_ROOT)/lib/libgdal$(64)
 
 #	PVL library.
 PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include -I$(IDAEIM_ROOT)/include/PVL -I$(IDAEIM_ROOT)/include/Strings -I$(IDAEIM_ROOT)/include/Utility
-PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
-								-lPVL$(64) \
-								-lString$(64) \
-								-lidaeim$(64)
-PVL_DIST				=	$(IDAEIM_ROOT)/lib/libPVL$(64) \
-							$(IDAEIM_ROOT)/lib/libString$(64) \
-							$(IDAEIM_ROOT)/lib/libidaeim$(64)
+ifeq ($(OS),WIN)
+	PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
+									PVL$(64).lib \
+									Strings$(64).lib \
+									Utility$(64).lib
+	PVL_DIST				=	$(IDAEIM_ROOT)/lib/PVL$(64) \
+								$(IDAEIM_ROOT)/lib/Strings$(64) \
+								$(IDAEIM_ROOT)/lib/Utility$(64)
+else
+	PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
+									-lPVL$(64) \
+									-lStrings$(64) \
+									-lUtility$(64)
+	PVL_DIST				=	$(IDAEIM_ROOT)/lib/libPVL$(64) \
+								$(IDAEIM_ROOT)/lib/libStrings$(64) \
+								$(IDAEIM_ROOT)/lib/libUtility$(64)
+endif
 
 #	Kakadu JPEG2000 library:
 KAKADU_INCLUDE			=	-I$(KAKADU_ROOT)/include
@@ -133,6 +143,14 @@ SUBSYSTEM_LIB_DIR		=	../lib$(SUBSYSTEM)
 SUBSYSTEM_LIB_NAME		=	lib$(SUBSYSTEM)$(64).$(SHARED_LIBRARY_EXT)
 SUBSYSTEM_LIB			=	$(SUBSYSTEM_LIB_DIR)/$(SUBSYSTEM_LIB_NAME)
 
+ifeq ($(OS),WIN)
+LIBRARIES				+= 	$(SUBSYSTEM_LIB) \
+							$(PVL_DIST) \
+							$(KAKADU_DIST) \
+							$($(GDAL)_DIST) \
+							$(PIRL_DIST) \
+							$($(OSSP_UUID)_DIST)
+else
 LIBRARIES				+= 	-L$(SUBSYSTEM_LIB_DIR) \
 								-l$(SUBSYSTEM)$(64) \
 							$(PVL_LIBRARY) \
@@ -140,6 +158,7 @@ LIBRARIES				+= 	-L$(SUBSYSTEM_LIB_DIR) \
 							$($(GDAL)_LIBRARY) \
 							$(PIRL_LIBRARY) \
 							$($(OSSP_UUID)_LIBRARY)
+endif
 
 #	Include files:
 ifeq ($(OS),WIN)

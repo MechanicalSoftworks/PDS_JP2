@@ -98,17 +98,38 @@ endif
 
 #	PVL library.
 PVL_INCLUDE				=	-I$(IDAEIM_ROOT)/include -I$(IDAEIM_ROOT)/include/PVL -I$(IDAEIM_ROOT)/include/Strings -I$(IDAEIM_ROOT)/include/Utility
-PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
-								-lPVL$(64) \
-								-lString$(64) \
-								-lidaeim$(64)
+ifeq ($(OS),WIN)
+	PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
+									PVL$(64).lib \
+									Strings$(64).lib \
+									Utility$(64).lib
+else
+	PVL_LIBRARY				=	-L$(IDAEIM_ROOT)/lib \
+									-lPVL$(64) \
+									-lStrings$(64) \
+									-lUtility$(64)
+endif
 
 #	Kakadu JPEG2000 library.
 KAKADU_INCLUDE			=	-I$(KAKADU_ROOT)/include
+ifneq ($(OS),WIN)
 KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib \
-								-lkdu_a$(64) \
-								-lkdu$(64) \
+								-lkdu_a63$(64) \
+								-lkdu63$(64) \
 								-lpthread
+else
+
+# ifndef 64
+# KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib/Win32 \
+								# kdu_a63R.lib \
+								# kdu_v63R.lib
+# else
+KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib/x64 \
+								-lkdu_a63R.lib \
+								-lkdu_v63R.lib
+# endif
+
+endif
 
 #	PIRL C++ class library.
 PIRL_INCLUDE			=	-I$(PIRL_ROOT)/include
