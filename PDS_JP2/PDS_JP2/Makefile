@@ -127,8 +127,9 @@ endif
 KAKADU_INCLUDE			=	-I$(KAKADU_ROOT)/include
 ifneq ($(OS),WIN)
 KAKADU_LIBRARY			=	-L$(KAKADU_ROOT)/lib \
-								-lkdu_a63$(64) \
-								-lkdu63$(64) \
+								-ltiff \
+								-lkdu_a$(64) \
+								-lkdu$(64) \
 								-lpthread
 else
 
