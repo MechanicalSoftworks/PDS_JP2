@@ -1,0 +1,81 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(PDS_JP2 LANGUAGES C CXX)
+
+find_package(libkdu REQUIRED)
+
+option(PDS_JP2_WITH_GDAL "With GDAL" ON)
+option(PDS_JP2_WITH_HIRISE "With HiRISE" ON)
+
+set(COMMON_DEFINES)
+set(GDAL_LIBRARY)
+set(LIBRARY_DEFINES)
+
+set(LIBRARY_SOURCES
+	PDS_JP2/libPDS_JP2/PDS_Data.cc
+	PDS_JP2/libPDS_JP2/PDS_Data_Block.cc
+	PDS_JP2/libPDS_JP2/Image_Data_Block.cc
+	PDS_JP2/libPDS_JP2/PDS_Converter.cc
+	PDS_JP2/libPDS_JP2/PDS_Converters.cc
+	PDS_JP2/libPDS_JP2/Generic_PDS_Converter.cc
+	PDS_JP2/libPDS_JP2/Dimensions.cc
+	PDS_JP2/libPDS_JP2/JP2_Box.cc
+	PDS_JP2/libPDS_JP2/JP2_Encoder.cc
+	PDS_JP2/libPDS_JP2/JP2_Decoder.cc
+)
+
+set(LIBRARY_HEADERS
+	PDS_JP2/libPDS_JP2/PDS_Data.hh
+	PDS_JP2/libPDS_JP2/PDS_Data_Block.hh
+	PDS_JP2/libPDS_JP2/Image_Data_Block.hh
+	PDS_JP2/libPDS_JP2/PDS_Converter.hh
+	PDS_JP2/libPDS_JP2/PDS_Converters.hh
+	PDS_JP2/libPDS_JP2/Generic_PDS_Converter.hh
+	PDS_JP2/libPDS_JP2/Dimensions.hh
+	PDS_JP2/libPDS_JP2/JP2_Box.hh
+	PDS_JP2/libPDS_JP2/JP2_Encoder.hh
+	PDS_JP2/libPDS_JP2/JP2_Decoder.hh
+)
+
+if(${PDS_JP2_WITH_GDAL})
+	set(COMMON_DEFINES "${COMMON_DEFINES} -DINCLUDE_GDAL")
+	set(GDAL_LIBRARY "gdal")
+	set(LIBRARY_SOURCES ${LIBRARY_SOURCES} PDS_JP2/libPDS_JP2/PDS_Projection_Data.cc)
+	set(LIBRARY_HEADERS ${LIBRARY_HEADERS} PDS_JP2/libPDS_JP2/PDS_Projection_Data.hh)
+endif()
+
+if(${PDS_JP2_WITH_HIRISE})
+	set(LIBRARY_DEFINES ${LIBRARY_DEFINES} -DHiRISE_PDS_CONVERTER -DHiPrecision_PDS_CONVERTER)
+	set(LIBRARY_SOURCES ${LIBRARY_SOURCES} PDS_JP2/libPDS_JP2/HiRISE_PDS_Converter.cc PDS_JP2/libPDS_JP2/HiPrecision_PDS_Converter.cc)
+	set(LIBRARY_HEADERS ${LIBRARY_HEADERS} PDS_JP2/libPDS_JP2/HiRISE_PDS_Converter.hh PDS_JP2/libPDS_JP2/HiPrecision_PDS_Converter.hh)
+endif()
+
+set(PRODUCER_UUID "0x2b, 0x0d, 0x7e, 0x97, 0xaa, 0x2e, 0x31, 0x7d, 0x91, 0x33, 0xe5, 0x31, 0x61, 0xa2, 0xf7, 0xd0")
+
+add_library(libPDS_JP2 STATIC ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})
+target_include_directories(libPDS_JP2 PUBLIC PDS_JP2/libPDS_JP2)
+target_link_libraries(libPDS_JP2 PVL PIRL++ libkdu ${GDAL_LIBRARY})
+target_compile_definitions(libPDS_JP2 PUBLIC ${COMMON_DEFINES} ${LIBRARY_DEFINES})
+set_target_properties(libPDS_JP2 PROPERTIES
+    PUBLIC_HEADER "${LIBRARY_HEADERS}"
+)
+
+add_executable(PDS_to_JP2 PDS_JP2/PDS_JP2/PDS_to_JP2.cc)
+target_compile_definitions(PDS_to_JP2 PRIVATE -DPRODUCER_UUID="${PRODUCER_UUID}" ${COMMON_DEFINES})
+target_link_libraries(PDS_to_JP2 PRIVATE libPDS_JP2 libkdu ${GDAL_LIBRARY})
+
+add_executable(JP2_to_PDS PDS_JP2/PDS_JP2/JP2_to_PDS.cc)
+target_compile_definitions(JP2_to_PDS PRIVATE -DPRODUCER_UUID="${PRODUCER_UUID}" ${COMMON_DEFINES})
+target_link_libraries(JP2_to_PDS PRIVATE libPDS_JP2 libkdu ${GDAL_LIBRARY})
+
+install(TARGETS libPDS_JP2 PDS_to_JP2 JP2_to_PDS
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(IMPORTED_RUNTIME_ARTIFACTS ${libkdu_runtime_artifacts}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
